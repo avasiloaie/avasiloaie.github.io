@@ -1,7 +1,54 @@
 <!DOCTYPE html>
 <html>
+<link rel="stylesheet" href="lib/codemirror.css">
+<script src="lib/codemirror.js"></script>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+<div id="editor">
+    <div id="code">
+    </div>
+</div>
+<script>
+    
+var $editor = CodeMirror(document.getElementById('code'), {
+  value: "Edit this!!!",
+  mode:  "javascript",
+  lineNumbers: true
+});
+    
+function work(code){
+    function InputStream(input) {
+    var pos = 0, line = 1, col = 0;
+    return {
+        next  : next,
+        peek  : peek,
+        eof   : eof,
+        croak : croak,
+    };
+    function next() {
+        var ch = input.charAt(pos++);
+        if (ch == "\n") line++, col = 0; else col++;
+        return ch;
+    }
+    function peek() {
+        return input.charAt(pos);
+    }
+    function eof() {
+        return peek() == "";
+    }
+    function croak(msg) {
+        throw new Error(msg + " (" + line + ":" + col + ")");
+    }
+}
+    // tokenize
+    
+    // parse to ast
+    
+    // get dependencies from ast
+}
+    
+$editor.on("change", function(e, cm){
+    work($editor.getValue())
+} )
+</script>
 </body>
 </html>

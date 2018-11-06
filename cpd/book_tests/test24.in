@@ -1,0 +1,4 @@
+DO I = 1, N
+  A(L) = B(I) + C
+  B(I+1) = A(L+K) + X(I)
+ENDDO

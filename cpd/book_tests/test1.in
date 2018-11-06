@@ -1,0 +1,7 @@
+DO i
+  DO j
+    DO k
+      A(i, j) = A(i, k) + C
+    ENDDO
+  ENDDO
+ENDDO

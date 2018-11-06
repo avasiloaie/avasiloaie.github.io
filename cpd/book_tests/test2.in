@@ -1,0 +1,7 @@
+DO i
+  DO j
+    DO k
+      A(5, i+1, j) = A(N, i, k) + C
+    ENDDO
+  ENDDO
+ENDDO

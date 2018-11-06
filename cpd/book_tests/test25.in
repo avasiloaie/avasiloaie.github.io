@@ -1,0 +1,3 @@
+DO I = 1, N
+  A(S*I) = A(S*I) + B(I)
+ENDDO
