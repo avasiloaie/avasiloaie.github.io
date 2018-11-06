@@ -12,7 +12,7 @@ stmt
 // DO
 
 do_stmt
-  : DO VARNAME (ASSIGN eq_expr COMMA eq_expr)? EOL stmt+ (ENDDO | (END DO))
+  : DO VARNAME (ASSIGN eq_expr COMMA eq_expr (COMMA eq_expr)?)? EOL stmt+ (ENDDO | (END DO))
   ;
 
 
