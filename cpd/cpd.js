@@ -18,11 +18,12 @@ function Assign_Stmt(lhs,rhs) {
     this.rhs = rhs;
 }
 
-function Do_Stmt(it,start,end,stmt_list) {
+function Do_Stmt(it,start,end,step,stmt_list) {
     this.type = "do";
     this.it = it;
     this.start = start;
     this.end = end;
+    this.step = step;
     this.stmt_list = stmt_list;
 }
 
@@ -83,18 +84,28 @@ ASTBuilder.prototype.visitDo_stmt = function(ctx) {
     var it = ctx.children[1].getText();
     var start = null;
     var end = null;
+    var step = null;
     var stmt_list = [];
+    var ch = ctx.getChildCount();
+    if ( ctx.children[ch-1] == "DO" ) { ch = ch - 1; }
     if (this.visit(ctx.children[2]) != '\n' && this.visit(ctx.children[2]) != '\r'){
         start = this.visitExpr(ctx.children[3]);
         end = this.visitExpr(ctx.children[5]);
-        for (var i = 0; i < ctx.getChildCount() - 8; i++)
-            stmt_list[i] = this.visitStmt(ctx.children[i+7]);
+        if (this.visit(ctx.children[6]) != ','){
+            for (var i = 0; i < ch - 8; i++)
+                stmt_list[i] = this.visitStmt(ctx.children[i+7]);
+        }
+        else {
+            step = this.visitExpr(ctx.children[7]);
+            for (var i = 0; i < ch - 10; i++)
+                stmt_list[i] = this.visitStmt(ctx.children[i+9]);
+        }
     }
     else {
-        for (var i = 0; i < ctx.getChildCount() - 4; i++)
+        for (var i = 0; i < ch - 4; i++)
             stmt_list[i] = this.visitStmt(ctx.children[i+3]);
     }
-    return new Do_Stmt(it,start,end,stmt_list);
+    return new Do_Stmt(it,start,end,step,stmt_list);
 };
 
 ASTBuilder.prototype.visitAssign_stmt = function(ctx) {
@@ -106,7 +117,8 @@ ASTBuilder.prototype.visitAssign_stmt = function(ctx) {
 ASTBuilder.prototype.visitIf_stmt = function(ctx) {
     var expr = this.visit(ctx.children[2]);
     var block = this.visit(ctx.children[4]);
-    return new If_Stmt(expr,block[0],block[1],block[2]);
+    if (block.length == 3) { return new If_Stmt(expr,block[0],block[1],block[2]); }
+    else { return new If_Stmt(expr,[block],null,null); }
 }
 
 ASTBuilder.prototype.visitBlock_if_stmt = function(ctx) {
@@ -293,7 +305,7 @@ ASTPrinter.prototype.visitDo_Stmt = function(do_stmt) {
     if ( txt.length != 0 ){
         txt = txt.substring(0,txt.length-1);
     }
-    return "Do(it="+do_stmt.it+",start="+this.visitOp(do_stmt.start)+",end="+this.visitOp(do_stmt.end)+",stmt_list="+txt+")";
+    return "Do(it="+do_stmt.it+",start="+this.visitOp(do_stmt.start)+",end="+this.visitOp(do_stmt.end)+",step="+this.visitOp(do_stmt.step)+",stmt_list="+txt+")";
 }
 
 ASTPrinter.prototype.visitAssign_Stmt = function(assign_stmt) {
@@ -378,12 +390,12 @@ require.extensions['.in'] = function (module, filename) {
 var tests = [];
 var current_test_location = "";
 
-for (var i = 1; i <= 52; i++) {
+for (var i = 1; i <= 54; i++) {
     current_test_location = "./book_tests/test"+i+".in";
     tests[i] = require(current_test_location);
 }
 
-for (var i = 1; i <= 52; i++) {
+for (var i = 1; i <= 54; i++) {
 
     var chars = new antlr4.InputStream(tests[i]);
     var lexer = new cpdLexer(chars);

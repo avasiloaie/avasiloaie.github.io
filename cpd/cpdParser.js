@@ -67,9 +67,9 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0003\u0002\u0002JL\u0007\t\u0002\u0002KH\u0003\u0002\u0002\u0002K",
     "I\u0003\u0002\u0002\u0002L\u0007\u0003\u0002\u0002\u0002MN\u0007\u0004",
     "\u0002\u0002NO\u0007\f\u0002\u0002OP\u0005\u0014\u000b\u0002PS\u0007",
-    "\r\u0002\u0002QT\u0005\n\u0006\u0002RT\u0005\u0004\u0003\u0002SQ\u0003",
-    "\u0002\u0002\u0002SR\u0003\u0002\u0002\u0002T\t\u0003\u0002\u0002\u0002",
-    "UY\u0005\f\u0007\u0002VX\u0005\u000e\b\u0002WV\u0003\u0002\u0002\u0002",
+    "\r\u0002\u0002QT\u0005\n\u0006\u0002RT\u0005\u0012\n\u0002SQ\u0003\u0002",
+    "\u0002\u0002SR\u0003\u0002\u0002\u0002T\t\u0003\u0002\u0002\u0002UY",
+    "\u0005\f\u0007\u0002VX\u0005\u000e\b\u0002WV\u0003\u0002\u0002\u0002",
     "X[\u0003\u0002\u0002\u0002YW\u0003\u0002\u0002\u0002YZ\u0003\u0002\u0002",
     "\u0002Z]\u0003\u0002\u0002\u0002[Y\u0003\u0002\u0002\u0002\\^\u0005",
     "\u0010\t\u0002]\\\u0003\u0002\u0002\u0002]^\u0003\u0002\u0002\u0002",
@@ -638,8 +638,8 @@ If_stmtContext.prototype.block_if_stmt = function() {
     return this.getTypedRuleContext(Block_if_stmtContext,0);
 };
 
-If_stmtContext.prototype.stmt = function() {
-    return this.getTypedRuleContext(StmtContext,0);
+If_stmtContext.prototype.assign_stmt = function() {
+    return this.getTypedRuleContext(Assign_stmtContext,0);
 };
 
 If_stmtContext.prototype.enterRule = function(listener) {
@@ -688,11 +688,9 @@ cpdParser.prototype.if_stmt = function() {
             this.state = 79;
             this.block_if_stmt();
             break;
-        case cpdParser.IF:
-        case cpdParser.DO:
         case cpdParser.VARNAME:
             this.state = 80;
-            this.stmt();
+            this.assign_stmt();
             break;
         default:
             throw new antlr4.error.NoViableAltException(this);

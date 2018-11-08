@@ -19,7 +19,7 @@ do_stmt
 // IF+ELSE
 
 if_stmt
-  : IF LPAR expr RPAR (block_if_stmt | stmt)
+  : IF LPAR expr RPAR (block_if_stmt | assign_stmt)
   ;
 
 block_if_stmt
