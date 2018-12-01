@@ -10,6 +10,9 @@
 <script src="lib/require.js"></script>
     
 <!-- DEPENDENCY ANALYSIS -->
+<script type="text/javascript">
+var antlr4 = require('antlr4/index');   
+</script>
     
     
     
@@ -45,9 +48,10 @@ var $editor = CodeMirror(document.getElementById('code'), {
     
 document.getElementById("run_button").addEventListener("click", function(){
     var input = $editor.getValue();
-    var ast = antlr4.InputStream(input);
+    var chars = antlr4.InputStream(input);
 
-    console.log(input)
+    console.log(input);
+    console.log(chars);
     document.getElementById('output').innerHTML = input;
 });
 
