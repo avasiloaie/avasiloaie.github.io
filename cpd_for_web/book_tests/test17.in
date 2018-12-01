@@ -1,0 +1,5 @@
+DO I = 1,100
+  DO J = 1, I
+    A(J+20,I) = A(J,19) + B
+  ENDDO
+ENDDO

@@ -1,54 +1,63 @@
 <!DOCTYPE html>
 <html>
+
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css?family=Arvo:400,400i,700,700i" rel="stylesheet">
+    
+<!-- USER INPUT -->
 <link rel="stylesheet" href="lib/codemirror.css">
 <script src="lib/codemirror.js"></script>
-<body>
-<div id="editor">
-    <div id="code">
-    </div>
-</div>
-<script>
+<script src="lib/require.js"></script>
     
+<!-- DEPENDENCY ANALYSIS -->
+    
+    
+    
+<body>
+    
+<div id="header">
+<div id="title">Compiler Dependency</div>
+<div id="desc">UG4 project</div>
+</div>
+    
+<div id="wrapper">
+    
+<div id="editor">
+    <div id="code"></div>
+    <button id="run_button">Run</button>
+</div>
+    
+<div id="printer">
+    <div id="output">Analysis output</div>
+</div>
+    
+    
+</div>
+<div id="footer"></div>
+    
+<script type="text/javascript">   
 var $editor = CodeMirror(document.getElementById('code'), {
-  value: "Edit this!!!",
+  value: "INPUT CODE HERE...",
   mode:  "javascript",
   lineNumbers: true
 });
+
     
-function work(code){
-    function InputStream(input) {
-    var pos = 0, line = 1, col = 0;
-    return {
-        next  : next,
-        peek  : peek,
-        eof   : eof,
-        croak : croak,
-    };
-    function next() {
-        var ch = input.charAt(pos++);
-        if (ch == "\n") line++, col = 0; else col++;
-        return ch;
-    }
-    function peek() {
-        return input.charAt(pos);
-    }
-    function eof() {
-        return peek() == "";
-    }
-    function croak(msg) {
-        throw new Error(msg + " (" + line + ":" + col + ")");
-    }
-}
-    // tokenize
+document.getElementById("run_button").addEventListener("click", function(){
+    var input = $editor.getValue();
+    var ast = antlr4.InputStream(input);
+
+    console.log(input)
+    document.getElementById('output').innerHTML = input;
+});
+
+/*$editor.on("change", function(e, cm){
+    var input = $editor.getValue();
+    document.getElementById('output').innerHTML = input;
+} )*/
+
     
-    // parse to ast
-    
-    // get dependencies from ast
-}
-    
-$editor.on("change", function(e, cm){
-    work($editor.getValue())
-} )
 </script>
+    
 </body>
 </html>

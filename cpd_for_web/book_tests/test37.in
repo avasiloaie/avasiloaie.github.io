@@ -1,0 +1,5 @@
+DO I = 1,100
+  DO J = 1,100
+    A(I-1,2*I) = A(I,I+J+110)
+  ENDDO
+ENDDO

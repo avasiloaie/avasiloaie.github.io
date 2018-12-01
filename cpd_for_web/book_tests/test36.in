@@ -1,0 +1,7 @@
+DO I
+  DO J
+    DO K
+      A(J-I,I+1,J+K) = A(J-I,I,J+K)
+    ENDDO
+  ENDDO
+ENDDO

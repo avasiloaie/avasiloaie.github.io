@@ -1,0 +1,6 @@
+IF (L<=N) THEN
+  A(N+1:N+L) = A(1:L) + B
+ELSE
+  DO I = 1, L
+    A(I + N) = A(I) + B
+  ENDDO

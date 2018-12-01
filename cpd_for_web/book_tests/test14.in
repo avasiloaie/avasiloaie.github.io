@@ -1,0 +1,6 @@
+DO i = 1,(N+1)/2
+  A(i) = A(N-i+1) + C
+ENDDO
+DO i = (N+1)/2 + 1, N
+  A(i) = A(N-i+1) + C
+ENDDO

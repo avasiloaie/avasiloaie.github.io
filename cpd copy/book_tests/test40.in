@@ -1,0 +1,5 @@
+DO i
+  DO j
+    A(i1+c1, i2+c2) = A(i3+c3, i4+c4)
+  ENDDO
+ENDDO

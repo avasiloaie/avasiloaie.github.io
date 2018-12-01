@@ -1,0 +1,4 @@
+DO i = 1, 10
+  IF (A(i).GT.10) A(i) = A(i) * 2
+  IF (A(i).LT.-10) A(i) = A(i) / 2
+ENDDO

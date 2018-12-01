@@ -1,0 +1,5 @@
+DO J = 1, 100
+  DO I = 1, 100
+    A(I+1,I+J) = A(I,I+J-1) + C
+  ENDDO
+ENDDO

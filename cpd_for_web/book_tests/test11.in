@@ -1,0 +1,3 @@
+DO i = 1, N
+  Y(i, N) = Y(1, N) + Y(N, N)
+ENDDO

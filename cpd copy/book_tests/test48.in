@@ -1,0 +1,8 @@
+DO K =1,100
+  DO J = 1, 100
+    DO I = 1, 100
+      A(I+1, J+4, K+1) = B(I,J,K) + C
+      B(I+J,5,K+1) = A(2,K,K) + D
+    ENDDO
+  ENDDO
+ENDDO

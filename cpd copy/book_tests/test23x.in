@@ -1,0 +1,7 @@
+IF ((L.LT.1).OR.(L.GT.N)) THEN
+  A(1:N) = A(L) + B
+ELSE
+  DO I = 1, N
+    A(I) = A(L) + B
+  ENDDO
+ENDIF
