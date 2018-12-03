@@ -427,7 +427,22 @@ function calculate_graph_point() {
             for (j = 0; j < elems[i].to.length; j++) {
                 to_reformed = graph_links.get(elems[i].to[j][0].indices[0]+"");
                 edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+"" })
-                nodes.update({id: from_reformed, color: '#333'})
+                if (multi.get(from_reformed) == null) {
+                    nodes.update({id: from_reformed, color: '#FF7C23'})
+                    multi.set(from_reformed,1);
+                }
+                else if (multi.get(from_reformed) == 2) {
+                    nodes.update({id: from_reformed, color: '#B660E8'})
+                    multi.set(from_reformed,3);
+                }
+                if (multi.get(to_reformed) == null) {
+                    nodes.update({id: to_reformed, color: '#5889FF'})
+                    multi.set(to_reformed,2);
+                }
+                else if (multi.get(to_reformed) == 1) {
+                    nodes.update({id: to_reformed, color: '#B660E8'})
+                    multi.set(to_reformed,3);
+                }
 
             }
         }
