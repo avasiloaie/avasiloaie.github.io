@@ -1,7 +1,0 @@
-DO K =1,100
-  DO J = 1, 100
-    DO I = 1, 100
-      A(I+1, J+K+1, I) = A(I,J,2) + C
-    ENDDO
-  ENDDO
-ENDDO

@@ -1,3 +1,0 @@
-DO I = N+1, 2*N
-  A(I + N) = A(I) + B
-ENDDO

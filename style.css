@@ -8,7 +8,7 @@ body {
     height:110px;
     color: #F5F5F5;
     background-color: #444;
-    padding: 0 30px;
+    padding: 0 40px;
 }
 
 #title {
@@ -21,7 +21,7 @@ body {
 #desc {
     font-size:20px;
     color:#D9D9D9;
-    font-style:italic;
+    font-style: italic;
     text-shadow: #000333 0 1px 0;
 }
 
@@ -30,12 +30,23 @@ body {
 }
 
 #editor {
+    font-size:20px;
     float:left;
-    width:40%;
+    width:750px;
+}
+
+#printer {
+    margin-left:750px;
+    margin-right:15px;
+}
+
+#code {
+    border: 2px lightgray solid;
+    margin: 10px;
 }
 
 #run_button {
-    margin: 10px 10px 10px 28px;
+    margin: 10px 10px 10px 10px;
     font-size:1.5em;
     font-family: 'Arvo', serif;
     font-weight: bold;
@@ -62,7 +73,18 @@ body {
     background: #00B076;
 }
 
-#printer {
-    float: left;
-    padding: 15px;
+#text_before_direction_vector {
+    display: inline-block;
+    margin-left:50px;
+    margin-right:10px;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#direction_vector {
+    display: inline-block;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 2px;
 }

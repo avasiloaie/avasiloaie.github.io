@@ -1,8 +1,0 @@
-DO I = 1, 100
-  DO J = 1, 50
-    A(I,J) = B(I,J) + C
-  ENDDO
-  DO J = 51, 100
-    A(I,J) = A(I,J) + D
-  ENDDO
-ENDDO

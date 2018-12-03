@@ -1,4 +1,0 @@
-DO I = 1, 100
-  A(I+1,I) = B(I) + C
-  D(I) = A(I,I) * E
-ENDDO

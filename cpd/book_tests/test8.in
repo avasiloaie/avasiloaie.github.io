@@ -1,5 +1,0 @@
-DO i
-  DO j
-    A(i+1, j) = A(i, j) + C
-  ENDDO
-ENDDO

@@ -1,5 +1,0 @@
-DO I=1,5
-  DO J=1,5
-    A(I,J)=A(I,J-1)+X
-  ENDDO
-ENDDO

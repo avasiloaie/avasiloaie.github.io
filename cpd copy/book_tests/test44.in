@@ -1,7 +1,0 @@
-DO I = 1, N
-  DO J = 1, N
-    DO K = 1, N
-      T = T + A(I,J,K)
-    ENDDO
-  ENDDO
-ENDDO

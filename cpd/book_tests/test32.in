@@ -1,5 +1,0 @@
-DO J = 1, 100
-  DO I = 1, 100
-    A(I+1,J) = A(I, J) + C
-  ENDDO
-ENDDO

@@ -1,5 +1,0 @@
-DO I
-  DO J
-    A(I+1, I+J) = A(I, I+J)
-  ENDDO
-ENDDO

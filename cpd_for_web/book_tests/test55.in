@@ -1,9 +1,0 @@
-DO I = 1, 10
-  DO J = 1, 10
-    IF ((J % 2).EQ.0) THEN
-      A(I,J) = A(I-1,J) + X
-    ELSE
-      A(I,J) = A(I,J-1) + X
-    ENDIF
-  ENDDO
-ENDDO

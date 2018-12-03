@@ -1,5 +1,0 @@
-DO I
-  DO J
-    A(I,2*J+I) = A(I,2*J-I+5)
-  ENDDO
-ENDDO

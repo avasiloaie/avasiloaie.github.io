@@ -1,7 +1,0 @@
-IF (a.EQ.b) THEN
-  a = a+1
-ELSE IF (a.GT.b) THEN
-  a = a-1
-ELSE IF (a.LT.b) THEN
-  a = a+1
-END IF

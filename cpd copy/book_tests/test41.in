@@ -1,5 +1,0 @@
-DO I = 1,N
-  DO J = 1,N
-    A(I,J) = A(J,I) + C
-  ENDDO
-ENDDO

@@ -1,5 +1,0 @@
-Y(1, N) = Y(1, N) + Y(N, N)
-DO i = 2, N-1
-  Y(i, N) = Y(1, N) + Y(N, N)
-ENDDO
-Y(N, N) = Y(1, N) + Y(N, N)

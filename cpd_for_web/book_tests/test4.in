@@ -1,7 +1,0 @@
-DO i
-  DO j
-      DO k
-         A(i, j, j) = A(i, j, k) + C
-      ENDDO
-  ENDDO
-ENDDO

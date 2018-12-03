@@ -1,3 +1,0 @@
-DO I = 1, L
-  A(I + N) = A(I) + B
-ENDDO

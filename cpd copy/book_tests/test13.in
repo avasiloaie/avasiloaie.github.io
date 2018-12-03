@@ -1,3 +1,0 @@
-DO i = 1, N
-  A(i) = A(N-i+1) + C
-ENDDO

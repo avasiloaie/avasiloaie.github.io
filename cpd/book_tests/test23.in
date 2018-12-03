@@ -1,7 +1,0 @@
-DO I = 1,10
-    IF (A(I).LT.X) THEN
-        A(I) = A(I)+1
-    ELSE
-        A(I) = A(I)-1
-    ENDIF
-ENDDO

@@ -1,3 +1,0 @@
-DO i = 1, N
-  A(i+2*N) = A(i+N) + C
-ENDDO

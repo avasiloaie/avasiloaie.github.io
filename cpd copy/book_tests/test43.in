@@ -1,7 +1,0 @@
-DO I = 1, N
-  DO J = 2, N
-    DO K = 1, N
-      A(I,J+1,J+K) = A(I+1,J,J+K) + C
-    ENDDO
-  ENDDO
-ENDDO

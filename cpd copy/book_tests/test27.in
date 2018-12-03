@@ -1,7 +1,0 @@
-DO I = 1, N
-  DO J = 1, M
-    DO K = 1, 100
-      A(I,K) = A(I+J,K) + B
-    ENDDO
-  ENDDO
-ENDDO
