@@ -17,6 +17,76 @@
 <!-- GRAPH RENDERING -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
+
+<!-- CHROMA -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script>
+
+var colors = new Array(
+  //[62,35,255],
+  //[60,255,60],
+  //[255,35,98],
+  //[45,175,230],
+  //[255,0,255],
+  //[255,128,0]
+  [255,108,28],
+  [232,54,48],
+  [255,52,178],
+  [255,170,38]);
+
+var step = 0;
+//color table indices for: 
+// current color left
+// next color left
+// current color right
+// next color right
+var colorIndices = [0,1,2,3];
+
+//transition speed
+var gradientSpeed = 0.0003;
+
+function updateGradient()
+{
+  
+  if ( $===undefined ) return;
+  
+var c0_0 = colors[colorIndices[0]];
+var c0_1 = colors[colorIndices[1]];
+var c1_0 = colors[colorIndices[2]];
+var c1_1 = colors[colorIndices[3]];
+
+var istep = 1 - step;
+var r1 = Math.round(istep * c0_0[0] + step * c0_1[0]);
+var g1 = Math.round(istep * c0_0[1] + step * c0_1[1]);
+var b1 = Math.round(istep * c0_0[2] + step * c0_1[2]);
+var color1 = "rgb("+r1+","+g1+","+b1+")";
+
+var r2 = Math.round(istep * c1_0[0] + step * c1_1[0]);
+var g2 = Math.round(istep * c1_0[1] + step * c1_1[1]);
+var b2 = Math.round(istep * c1_0[2] + step * c1_1[2]);
+var color2 = "rgb("+r2+","+g2+","+b2+")";
+
+ $('#header').css({
+   background: "-webkit-gradient(linear, left top, right top, from("+color1+"), to("+color2+"))"}).css({
+    background: "-moz-linear-gradient(left, "+color1+" 0%, "+color2+" 100%)"});
+  
+  step += gradientSpeed;
+  if ( step >= 1 )
+  {
+    step %= 1;
+    colorIndices[0] = colorIndices[1];
+    colorIndices[2] = colorIndices[3];
+    
+    //pick two new target color indices
+    //do not pick the same as the current one
+    colorIndices[1] = ( colorIndices[1] + Math.floor( 1 + Math.random() * (colors.length - 1))) % colors.length;
+    colorIndices[3] = ( colorIndices[3] + Math.floor( 1 + Math.random() * (colors.length - 1))) % colors.length;
+    
+  }
+}
+
+setInterval(updateGradient,10);
+</script>
     
 <style type="text/css">
     #mynetwork {
@@ -31,8 +101,18 @@
 <body>
     
 <div id="header">
-<div id="title">Compiler Dependency</div>
-<div id="desc">UG4 Project</div>
+    <div id="header_left">
+        <div id="title">Compiler Dependency</div>
+        <div id="desc">> Sandbox Tool</div>
+    </div>
+    <div id="header_right">
+        <ul>
+            <li><a href="">Sample Page 1</a></li>
+            <li><a href="">Sample Page 2</a></li>
+            <li><a href="">Sample Page 3</a></li>
+            <li><a href="">Sample Page 4</a></li>
+        </ul>
+    </div>
 </div>
     
 <div id="wrapper">
@@ -44,8 +124,8 @@
     
 <div id="printer">
     <div id="mynetwork"></div>
-    <div id="legend">
-        <div style="display:inline-block; margin-right:10px; font-weight:bold;">Legend:</div>
+    <div id="labels">
+        <div style="display:inline-block; margin-right:10px; font-weight:bold;">Labels:</div>
         <div style="width:20px; height:20px; background-color:#FF7C23; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Read</div>
         <div style="margin-left:15px; width:20px; height:20px; background-color:#5889FF; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Write</div>
         <div style="margin-left:15px; width:20px; height:20px; background-color:#B660E8; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Read/Write</div>
@@ -111,7 +191,7 @@ function evaluate(expr) { // A(expr,expr) -> evaluates expr for current iteratio
     }
     else if (type == "var" ) {
         if (iterators.has(expr.variable)) return iterators.get(expr.variable);
-        else return 0;
+        else return 10;
     }
     else if (type == "array") {
         return 0;
@@ -161,6 +241,7 @@ function simulate_stmts(stmt_list) {
                 }
             }
             else if (stmt.else_part != null) {
+                console.log(stmt.else_part);
                 simulate_stmts(stmt.else_part.stmt_list);
             }
         }
@@ -172,12 +253,23 @@ function simulate_do(do_stmt) {
     iterators.set(it,evaluate(do_stmt.start));
     var step;
     if (do_stmt.step == null) step = 1;
-    else { step = do_stmt.step.val; }
+    else { step = evaluate(do_stmt.step); }
 
-    while (iterators.get(it) <= evaluate(do_stmt.end) ) { // ??? inclusive/non-inclusive
-        simulate_stmts(do_stmt.stmt_list);
-        var next_step = iterators.get(it)+step;
-        iterators.set(it,next_step);
+    if (iterators.get(it) > evaluate(do_stmt.end)) {
+        if (step > 0) { step = -step; }
+
+        while (iterators.get(it) >= evaluate(do_stmt.end) ) {
+            simulate_stmts(do_stmt.stmt_list);
+            var next_step = iterators.get(it)+step;
+            iterators.set(it,next_step);
+        }
+    }
+    else {
+        while (iterators.get(it) <= evaluate(do_stmt.end) ) {
+            simulate_stmts(do_stmt.stmt_list);
+            var next_step = iterators.get(it)+step;
+            iterators.set(it,next_step);
+        }
     }
 }
 
@@ -283,8 +375,8 @@ function get_direction() {
     for (i = 0; i < n; i++) {
         if (star[i] == true) { result[i] = '*'; }
         else if ( distance_vector[i] == 0 ) { result[i] = '='; }
-        else if ( distance_vector[i] > 0 ) { result[i] = '<'; }
-        else { result[i] = '>'; }
+        else if ( distance_vector[i] > 0 ) { result[i] = '>'; }
+        else { result[i] = '<'; }
     }
     return result;
 }
@@ -351,21 +443,10 @@ function calculate_graph_point() {
     }
 
     // create an array with nodes
-    var nodes = new vis.DataSet([
-        /*{id: 1, label: 'Node 1'},
-        {id: 2, label: 'Node 2'},
-        {id: 3, label: 'Node 3'},
-        {id: 4, label: 'Node 4'},
-        {id: 5, label: 'Node 5'}*/
-    ]);
+    var nodes = new vis.DataSet([]);
 
     // create an array with edges
-    var edges = new vis.DataSet([
-        /*{from: 1, to: 3},
-        {from: 1, to: 2},
-        {from: 2, to: 4},
-        {from: 2, to: 5}*/
-    ]);
+    var edges = new vis.DataSet([]);
 
     // create a network
     var container = document.getElementById('mynetwork');
@@ -378,7 +459,7 @@ function calculate_graph_point() {
 
     //nodes.on('*', function (event, properties, senderId) {});
 
-    var width = window.innerWidth - 750 - 15;
+    var width = window.innerWidth - 650 - 15;
     
     if (dimensions == 1 || dimensions == 2) {
         spacing = calculate_graph_point();
@@ -482,7 +563,6 @@ function calculate_graph_point() {
         color: 'lightgray',
         shape: 'circle',
         borderWidth: 1,
-        margin: 10
     },
     edges: {
         font: {face: 'Arvo', color: '#444', size: Math.floor(node_size*0.85)},
@@ -496,19 +576,17 @@ function calculate_graph_point() {
             }
         },
         color: {
-            color: 'darkgrey',
-            opacity: 0.6
+            color: 'darkgrey'
         }
     },
     physics: false,
     interaction: {
-        dragNodes: false,// do not allow dragging nodes
-        zoomView: true, // do not allow zooming
-        dragView: true  // do not allow dragging
+        dragNodes: false,
+        zoomView: true,
+        dragView: true
     }
     };
 
-    // initialize your network!
     var network = new vis.Network(container, data, options);
     network.moveTo({
     position: {x: 0, y: 0},

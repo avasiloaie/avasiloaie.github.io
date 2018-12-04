@@ -7,8 +7,12 @@ body {
 #header {
     height:110px;
     color: #F5F5F5;
-    background-color: #444;
+    /*background-color: #444;*/
     padding: 0 40px;
+}
+
+#header_left {
+    float:left;
 }
 
 #title {
@@ -32,13 +36,49 @@ body {
 #editor {
     font-size:20px;
     float:left;
-    width:750px;
+    width:650px;
 }
 
 #printer {
-    margin-left:750px;
+    margin-left:650px;
     margin-right:15px;
 }
+
+#header_right {
+    padding-top:30px;
+    float:right;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    float: left;
+    background-color: rgba(0,0,0,0.1);
+    margin-left:20px;
+}
+
+li:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+a {
+    display: block;
+    padding: 15px;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 16px;
+    color:#fff;
+    text-shadow: #444 0 1px 0;
+}
+
+/*#labels {
+    margin-top:-50px;
+    margin-left:10px;
+}*/
 
 #code {
     border: 2px lightgray solid;

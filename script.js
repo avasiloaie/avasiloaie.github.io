@@ -138,7 +138,9 @@ ASTBuilder.prototype.visitBlock_if_stmt = function(ctx) {
         for (var i = 0; i < ctx.getChildCount()-4; i++) {
             else_if_list[i] = this.visitElse_if_stmt(ctx.children[i+1]);
         }
-        just_else = this.visitElse_stmt(ctx.children[ctx.getChildCount()-3]);
+        if (ctx.getChildCount()-3 != 0) {
+            just_else = this.visitElse_stmt(ctx.children[ctx.getChildCount()-3]);
+        }
         if (just_else == null) {
             else_if_list[ctx.getChildCount()-4] = this.visitElse_if_stmt(ctx.children[ctx.getChildCount()-3]);
         }
@@ -150,7 +152,9 @@ ASTBuilder.prototype.visitBlock_if_stmt = function(ctx) {
         for (i = 0; i < ctx.getChildCount()-2; i++) {
             else_if_list[i] = this.visitElse_if_stmt(ctx.children[i+1]);
         }
-        just_else = this.visitElse_stmt(ctx.children[ctx.getChildCount()-2]);
+        if (ctx.getChildCount()-2 != 0) {
+            just_else = this.visitElse_stmt(ctx.children[ctx.getChildCount()-2]);
+        }
         if (just_else == null) {
             else_if_list[ctx.getChildCount()-3] = this.visitElse_if_stmt(ctx.children[ctx.getChildCount()-2]);
         }
@@ -299,7 +303,6 @@ ASTBuilder.prototype.visitValue = function(ctx) {
 ASTBuilder.prototype.visitVarname = function(ctx) {
     return new Var(ctx.getText());
 }
-
 
 window.parse_routine = function(code){
     console.log("Parsing input code...");
