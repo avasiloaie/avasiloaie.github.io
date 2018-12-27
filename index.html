@@ -1041,7 +1041,6 @@ function to_delta(dep) {
     for (i = 0; i < ds.length; i++) {
         var delta = "";
         for (j = 0; j < ds[i][1].length; j++) {
-            console.log(to_delta(ds[i][1][j]));
             delta = delta + to_delta(ds[i][1][j]) + ",";
         }
         delta = delta.substr(0,delta.length-1);
@@ -1086,11 +1085,7 @@ function to_delta(dep) {
         };
 
         var network = new vis.Network(container, data, options);
-        network.moveTo({
-        position: {x: -width/2, y: -height/2},
-        //offset: {x: -Math.floor(width*0.9/2), y: -Math.floor(height*0.9/2)},
-        scale: 1,
-        })
+ 
 
         //document.getElementById('labels_dpgph').style.display = 'inline-block';
         document.getElementById('labels_itspc').style.display = 'none';
