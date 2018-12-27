@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -13,6 +14,62 @@
     
 <!-- DEPENDENCY ANALYSIS -->
 <script src="bundle.js"></script>
+<script>
+function load_test(nr) {
+    var test = [];
+    test[1] = `DO I=1,4
+	DO J=1,5
+    	A(I,J)=A(I,J-1)
+    ENDDO
+ENDDO
+`;
+    test[2] = `DO I=1,4
+	DO J=1,4
+    	A(I,J)=A(I,J+1)
+    ENDDO
+ENDDO
+`;
+    test[3] = `DO I=1,3
+	DO J=1,3
+    	A(I,1)=A(I+10,J+10)
+    ENDDO
+ENDDO
+`;
+    test[4] = `DO I=1,5
+	DO J=1,5
+    	A(I,J)=A(I-1,J-1)+10
+    ENDDO
+ENDDO
+`;
+    test[5] = `DO I=1,3
+	DO J=1,3
+    	A(I,J)=A(2,2)
+    ENDDO
+ENDDO
+`;
+    test[6] = `DO I=1,3
+	DO J=1,3
+    	A(I,J)=A(J,I)
+    ENDDO
+ENDDO
+`;
+    test[7] = `DO I=1,3
+	DO J=1,3
+    	A(I-1,J-1)=A(I,J)
+    	A(I,J)=A(I,J-1)
+    ENDDO
+ENDDO
+`;
+    test[8] = `DO I=1,5
+	DO J=1,5
+    	A(I,J-1)=A(I,J)
+        A(I,J)=A(I-1,J-1)
+    ENDDO
+ENDDO
+`;
+    $editor.setValue(test[nr]);
+}
+</script>
     
 <!-- GRAPH RENDERING -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -91,7 +148,7 @@ setInterval(updateGradient,10);
 <style type="text/css">
     #mynetwork {
         width: 100%;
-        height: 600px;
+        height: 604px;
         border: 2px solid lightgray;
         display:inline-block;
         margin:10px 0px 10px 0;
@@ -120,16 +177,67 @@ setInterval(updateGradient,10);
 <div id="editor">
     <div id="code"></div>
     <button id="run_button">Run</button>
+    <div include="form-input-select()">
+        <select id ="option" required>
+          <!--
+            This is how we can do "placeholder" options.
+            note: "required" attribute is on the select
+          -->
+          <option value=""
+                  hidden
+          >Routine</option>
+      
+          <!-- normal options -->
+          <option value="1">Iteration Space</option>
+          <option value="2">Dependency Graph</option>
+        </select>
+    </div>
+    <nav id="primary_nav_wrap">
+            <ul>
+              <li><a href="#">Load test</a>
+                <ul>
+                  <li><a href="#">Basic</a>
+                    <ul>
+                      <li><a href="#" onclick="load_test(1); return false;">RAW</a></li>
+                      <li><a href="#" onclick="load_test(2); return false;">WAR</a></li>
+                      <li><a href="#" onclick="load_test(3); return false;">WAW</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#">Iteration Space</a>
+                    <ul>
+                      <li><a href="#" onclick="load_test(4); return false;">-1,-1</a></li>
+                      <li><a href="#" onclick="load_test(5); return false;">One point</a></li>
+                      <li><a href="#" onclick="load_test(6); return false;">A(I,J) = A(J,I)</a></li>
+                      <li><a href="#" onclick="load_test(7); return false;">Multiple statements</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#">Dependency Graph</a>
+                    <ul>
+                      <li><a href="#" onclick="load_test(8); return false;">Two Statements</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            </nav>
 </div>
     
 <div id="printer">
     <div id="mynetwork"></div>
     <div id="labels">
-        <div style="display:inline-block; margin-right:10px; font-weight:bold;">Labels:</div>
-        <div style="width:20px; height:20px; background-color:#FF7C23; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Read</div>
-        <div style="margin-left:15px; width:20px; height:20px; background-color:#5889FF; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Write</div>
-        <div style="margin-left:15px; width:20px; height:20px; background-color:#B660E8; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Read/Write</div>
-        <div id="text_before_direction_vector">Direction vector:</div><div id="direction_vector"><i>n/a</i></div>
+        <div id="labels_itspc">
+            <div style="display:inline-block; margin-right:10px; font-weight:bold;">Dependencies:</div>
+            <div style="width:20px; height:20px; background-color:#FF7C23; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">RAW</div>
+            <div style="margin-left:15px; width:20px; height:20px; background-color:#5889FF; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">WAR</div>
+            <div style="margin-left:15px; width:20px; height:20px; background-color:red; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">WAW</div>
+            <div style="margin-left:15px; width:20px; height:20px; background-color:#B660E8; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Mixed</div>
+        </div>
+        <div id="labels_dpgph">
+            <div style="display:inline-block; margin-right:10px; font-weight:bold;">Labels:</div>
+            <div style="display: inline-block;">δ</div><div style="display:inline-block; margin-left:5px;">RAW</div>
+            <div style="margin-left:15px; display: inline-block;">δ⁻¹</div><div style="display:inline-block; margin-left:5px;">WAR</div>
+            <div style="margin-left:15px; display: inline-block;">δ⁰</div><div style="display:inline-block; margin-left:5px;">WAW</div>
+        </div>
     </div>
 </div>
     
@@ -150,11 +258,24 @@ document.getElementById("run_button").addEventListener("click", function(){
     input += '\n';
     var ast = parse_routine(input);
     
-    function Memory(id,indices,key) {
+function Memory(id,indices,key) {
     this.id = id;
     this.indices = indices;
     this.key = key;
     var state;
+}
+
+function Iteration(iterators,statements,deepness) {
+    this.iterators = iterators;
+    this.statements = statements;
+    this.deepness = deepness;
+}
+
+function Statement(nr) {
+    this.nr = nr;
+    var writes;
+    var reads;
+    var iterators;
 }
 
 function evaluate(expr) { // A(expr,expr) -> evaluates expr for current iteration
@@ -191,7 +312,7 @@ function evaluate(expr) { // A(expr,expr) -> evaluates expr for current iteratio
     }
     else if (type == "var" ) {
         if (iterators.has(expr.variable)) return iterators.get(expr.variable);
-        else return 10;
+        else return 0;
     }
     else if (type == "array") {
         return 0;
@@ -221,12 +342,17 @@ function simulate_stmts(stmt_list) {
             simulate_do(stmt);
         }
         else if (stmt.type == "assign") {
+            statement = new Statement(stmt.nr);
+            statement.iterators = iterators.entriesArray();
             var wr = writes.length;
             var rd = reads.length;
             simulate_expr(stmt.lhs,"lhs");
             simulate_expr(stmt.rhs,"rhs");
-            link_stuff(writes.slice(wr-writes.length),reads.slice(rd-reads.length));
-
+            //link_stuff(writes.slice(wr-writes.length),reads.slice(rd-reads.length));
+            statement.writes = writes.slice(wr-writes.length);
+            statement.reads = reads.slice(rd-reads.length);
+            iterations.get(iterators.entriesArray().toString()).statements.push(statement);
+            statements.push(statement);
         }
         else if (stmt.type == "if") {
             if (evaluate(stmt.expr)) {
@@ -241,7 +367,6 @@ function simulate_stmts(stmt_list) {
                 }
             }
             else if (stmt.else_part != null) {
-                console.log(stmt.else_part);
                 simulate_stmts(stmt.else_part.stmt_list);
             }
         }
@@ -251,14 +376,17 @@ function simulate_stmts(stmt_list) {
 function simulate_do(do_stmt) {
     var it = do_stmt.it;
     iterators.set(it,evaluate(do_stmt.start));
+    //iterators_in_use.set(it,true);
     var step;
     if (do_stmt.step == null) step = 1;
     else { step = evaluate(do_stmt.step); }
+    deepness++;
 
     if (iterators.get(it) > evaluate(do_stmt.end)) {
         if (step > 0) { step = -step; }
 
         while (iterators.get(it) >= evaluate(do_stmt.end) ) {
+            iterations.set(iterators.entriesArray().toString(), new Iteration(iterators.entriesArray(), new Array(), deepness));
             simulate_stmts(do_stmt.stmt_list);
             var next_step = iterators.get(it)+step;
             iterators.set(it,next_step);
@@ -266,11 +394,15 @@ function simulate_do(do_stmt) {
     }
     else {
         while (iterators.get(it) <= evaluate(do_stmt.end) ) {
+            iterations.set(iterators.entriesArray().toString(), new Iteration(iterators.entriesArray(), new Array(), deepness));
             simulate_stmts(do_stmt.stmt_list);
             var next_step = iterators.get(it)+step;
             iterators.set(it,next_step);
         }
     }
+    deepness--;
+    iterators.delete(it);
+    //iterators_in_use.delete(it);
 }
 
 function get_memory(array_call) { // eg A(i,j) with i = 5, j = 2 -> MEM(A:5,2)
@@ -349,38 +481,6 @@ function no_of_dims() {
     return 0;
 }
 
-function get_direction() {
-    var elems = elem_map.toArray();
-    var n = elems[0].indices.length;
-    var distance_vector;
-    var first = true;
-    var result = [];
-    var star = [];
-    
-    for (i = 0; i < elems.length; i ++) {
-        if (elems[i].to.length != 0) {
-            if (first) {
-                distance_vector = elems[i].to[0][1];
-                first = false;
-            }
-            for (var j = 0; j < elems[i].to.length; j ++) {
-                for (var k = 0; k < distance_vector.length; k++) {
-                    if (distance_vector[k] != elems[i].to[j][1][k]) {
-                        star[k] = true;
-                    }
-                }
-            }
-        }
-    }
-    for (i = 0; i < n; i++) {
-        if (star[i] == true) { result[i] = '*'; }
-        else if ( distance_vector[i] == 0 ) { result[i] = '='; }
-        else if ( distance_vector[i] > 0 ) { result[i] = '>'; }
-        else { result[i] = '<'; }
-    }
-    return result;
-}
-
 function run_simulation(ast) {
     simulate_stmts(ast.stmt_list);
 }
@@ -389,19 +489,19 @@ function calculate_graph_point() {
     var node_itself = [];
     var distance_in_between = [];
 
-    if (dimensions == 1) {
-        diff = max_dimension[0]-min_dimension[0];
+    if (max_deepness == 1) {
+        diff = its.length-1;
         space_per_node = Math.floor((width*0.9)/(diff+1));
         node_itself[0] = Math.ceil(space_per_node*0.7);
         distance_in_between[0] = Math.floor(space_per_node*0.3);
         return [node_itself[0],distance_in_between[0]];
     }
-    else if (dimensions == 2) {
-        diff = max_dimension[0]-min_dimension[0];
+    else if (max_deepness == 2) {
+        diff = iterations.length-its.length-1;
         space_per_node = Math.floor((height*0.9)/(diff+1));
         node_itself[0] = Math.ceil(space_per_node*0.4);
         distance_in_between[0] = Math.floor(space_per_node*0.6);
-        diff = max_dimension[1]-min_dimension[1];
+        diff = its.length/(iterations.length - its.length)-1;
         space_per_node = Math.floor((width*0.9)/(diff+1));
         node_itself[1] = Math.ceil(space_per_node*0.7);
         distance_in_between[1] = Math.floor(space_per_node*0.3);
@@ -409,11 +509,105 @@ function calculate_graph_point() {
     }   
     return null;
 }
-    
-    var iterators = new Map();
 
+function get_distance(from, to) {
+    var arr = new Array();
+    if (from.length < to.length) {
+        for (var i = 0; i < from.length; i++) {
+            arr.push(to[i][1]-from[i][1]);
+        }
+        return arr;
+    }
+    else {
+        for (var i = 0; i < to.length; i ++) {
+            arr.push(to[i][1]-from[i][1]);
+        }
+        return arr;
+    }
+}
+
+function get_direction(dist) {
+    for (var i = 0; i < dist.length; i++) {
+        if (dist[i] > 0) dist[i] = '<';
+        else if (dist[i] < 0) dist[i] = '>';
+        else dist[i] = '=';
+    }
+    return dist;
+}
+
+function to_delta(dep) {
+    var build = "δ";
+    var i = 0;
+
+    while (i < dep[0].length && dep[0][i] == '=') {
+        i++;
+    }
+    if (i == dep[0].length) {
+        build = build + "∞";
+    }
+    else {
+        var sub;
+        if (i+1 == 1) {
+            sub = '₁';
+        }
+        else if (i+1 == 2) {
+            sub = '₂';
+        }
+        else if (i+1 == 3) {
+            sub = '₃';
+        }
+        else if (i+1 == 4) {
+            sub = '₄';
+        }
+        else if (i+1 == 5) {
+            sub = '₅';
+        }
+        else if (i+1 == 6) {
+            sub = '₆';
+        }
+        else if (i+1 == 7) {
+            sub = '₇';
+        }
+        else if (i+1 == 8) {
+            sub = '₈';
+        }
+        else if (i+1 == 9) {
+            sub = '₉';
+        }
+
+        build = build + sub;
+    }
+    if (dep[1] == 'war') {
+        build = build + "⁻¹";
+    }
+    else if (dep[1] == 'waw') {
+        build = build + "⁰";
+    }
+
+    return build;
+}
+
+    
+    // iterators
+    var iterators = new Map();
+    var iterators_in_use = new Map();
+    var iterations = new Map();
+    
+    var it_reads = new Map();
+    var it_writes = new Map();
+
+    // statements
+
+    var statements = new Array();
+    var stmt_reads = new Map();
+    var stmt_writes = new Map();
+    var deps = new Map();
+
+    // array
     var max_dimension = [ [-1],[-1],[-1]];
     var min_dimension = [ [100000],[100000],[100000]];
+
+    //
 
     var links = [];
     var writes = [];
@@ -423,24 +617,49 @@ function calculate_graph_point() {
     var direction;
     var i;
     var j;
+    var k;
+    var h;
     var cnt = 1;
     var spacing
     var current_x;
     var current_y;
     var width;
-    var height = 600;
+    var height = 604;
     var node_size;
     var graph_links = new Map();
     var multi = new Map();
+    var deepness = 0;
     
     run_simulation(ast);
-    dimensions = no_of_dims();
-    if (max_dimension[0] != -1) {
+    iterations = iterations.toArray();
+    var max_deepness = 0;
+
+    function iterations_filter(iteration) {
+        if (iteration.deepness == max_deepness) return true;
+        return false;
+    }
+
+    function iterators_to_label(iterators) {
+        return iterators[0][1]+","+iterators[1][1];
+    }
+
+    for (i = 0; i < iterations.length; i++) {
+        if (iterations[i].deepness > max_deepness) {
+            max_deepness = iterations[i].deepness;
+        }
+    }
+
+    its = iterations.filter(iterations_filter);
+
+    //dimensions = no_of_dims();
+
+
+    /*if (max_dimension[0] != -1) {
         direction = get_direction();
     }
     else {
         direction = null;
-    }
+    }*/
 
     // create an array with nodes
     var nodes = new vis.DataSet([]);
@@ -459,149 +678,424 @@ function calculate_graph_point() {
 
     //nodes.on('*', function (event, properties, senderId) {});
 
+    var e = document.getElementById('option');
+    var option = e.options[e.selectedIndex].value;
     var width = window.innerWidth - 650 - 15;
-    
-    if (dimensions == 1 || dimensions == 2) {
-        spacing = calculate_graph_point();
-        current_x = (spacing[0]+spacing[1])/2;
-        if (dimensions == 1) {
-            node_size = 25 < spacing[0]/2 ? 25 : spacing[0]/2;
-            for (i = min_dimension[0]; i <= max_dimension[0]; i++) {
-                nodes.add({id: cnt, label:i+"", x: current_x, y: 265, size: node_size});
-                graph_links.set(i+"",cnt);
-                current_x += spacing[0]+spacing[1];
-                cnt++;
-            }
-        }
-        else {
-            current_y = (spacing[0][0]+spacing[1][0])/2;
-            if (spacing[0][0] < spacing[0][1]) {
-                node_size = spacing[0][0]/2;
-            }
-            else {
-                node_size = spacing[0][1]/2;
-            }
-            node_size = 25 < node_size ? 25 : node_size;
-            for (i = min_dimension[0]; i <= max_dimension[0]; i++) {
-                current_x = (spacing[0][1]+spacing[1][1])/2;
-                for (j = min_dimension[1]; j <= max_dimension[1]; j++) {
-                    nodes.add({id: cnt, label:i+","+j, x: current_x, y: current_y, size: node_size});
-                    graph_links.set(i+","+j,cnt);
-                    current_x += spacing[0][1]+spacing[1][1];
+
+    if (option == 1) {
+        
+        if (max_deepness == 1 || max_deepness == 2) {
+            spacing = calculate_graph_point();
+            current_x = (spacing[0]+spacing[1])/2;
+            if (max_deepness == 1) {
+                node_size = 25 < spacing[0]/2 ? 25 : spacing[0]/2;
+                for (i = 0; i < its.length; i++) {
+                    nodes.add({id: cnt, label: its[cnt-1].iterators[0][1]+"", x: current_x, y: 265, size: node_size});
+                    graph_links.set(its[cnt-1].iterators,cnt);
+                    current_x += spacing[0]+spacing[1];
                     cnt++;
                 }
-                current_x = (spacing[0][1]+spacing[1][1])/2;
-                current_y += spacing[0][0]+spacing[1][0];
+            }
+            else if (max_deepness == 2) {
+                current_y = (spacing[0][0]+spacing[1][0])/2;
+                if (spacing[0][0] < spacing[0][1]) {
+                    node_size = spacing[0][0]/2;
+                }
+                else {
+                    node_size = spacing[0][1]/2;
+                }
+                node_size = 25 < node_size ? 25 : node_size;
+                for (i = 0; i < iterations.length - its.length; i++) {
+                    current_x = (spacing[0][1]+spacing[1][1])/2;
+                    for (j = 0; j < its.length/(iterations.length - its.length); j++) {
+                        nodes.add({id: cnt, label: iterators_to_label(its[cnt-1].iterators), x: current_x, y: current_y, size: node_size});
+                        graph_links.set(its[cnt-1].iterators,cnt);
+                        current_x += spacing[0][1]+spacing[1][1];
+                        cnt++;
+                    }
+                    current_x = (spacing[0][1]+spacing[1][1])/2;
+                    current_y += spacing[0][0]+spacing[1][0];
+                }
             }
         }
+
+
+        for (i = 0; i < its.length; i++) {
+            for (j = 0; j < its[i].statements.length; j++) {
+                var stmt = its[i].statements[j];
+                for (k = 0; k < stmt.reads.length; k++) {
+                    if (it_reads.has(stmt.reads[k].key)) {
+                        var arr = it_reads.get(stmt.reads[k].key);
+                    }
+                    else {
+                        var arr = new Array();
+                        it_reads.set(stmt.reads[k].key,arr);
+                    }
+                    if (it_writes.has(stmt.reads[k].key)) { // Read after Write
+                        make_graph(its[i], it_writes.get(stmt.reads[k].key), 'raw');
+                    }
+                    arr.push(its[i]);
+                }
+                for (k = 0; k < stmt.writes.length; k++) {
+                    if (it_reads.has(stmt.writes[k].key)) { // Write after Read
+                        make_graph(its[i], it_reads.get(stmt.writes[k].key), 'war');
+                    }
+                    if (it_writes.has(stmt.writes[k].key)) { // Write after Write
+                        make_graph(its[i], it_writes.get(stmt.writes[k].key), 'waw');
+                    }
+                    it_writes.set(stmt.writes[k].key,its[i]);
+                }
+            }
+        }
+
+        function make_graph(it, arr, which) {
+            if (which == 'war') {
+                for (var i = 0; i < arr.length; i ++) {
+                    if (!multi.has(arr[i].iterators+","+it.iterators)) {
+                        edges.add({from: graph_links.get(it.iterators), to: graph_links.get(arr[i].iterators), label: get_distance(it.iterators, arr[i].iterators).toString(), color: { color: '#5889FF', highlight: '#5889FF'} });
+                        multi.set(it.iterators+","+arr[i].iterators,2);
+                    }
+                    else if (multi.get(arr[i].iterators+","+it.iterators) != 2) {
+                        edges.update({from: graph_links.get(it.iterators), to: graph_links.get(arr[i].iterators), label: get_distance(it.iterators, arr[i].iterators).toString(), color: { color: '#B660E8', highlight: '#B660E8'} });
+                        multi.set(it.iterators+","+arr[i].iterators,4);
+                    }
+                }
+            }
+            else {
+                if (which == 'raw') {
+                    if (!multi.has(arr.iterators+","+it.iterators)) {
+                        edges.add({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: '#FF7C23', highlight: '#FF7C23'} });
+                        multi.set(arr.iterators+","+it.iterators,1);
+                    }
+                    else if (multi.get(arr.iterators+","+it.iterators) != 1) {
+                        edges.update({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: '#B660E8', highlight: '#B660E8'} });
+                        multi.set(arr.iterators+","+it.iterators,4);
+                    }
+                }
+                else if (which == 'waw') {
+                    if (!multi.has(arr.iterators+","+it.iterators)) {
+                        edges.add({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: 'red', highlight: 'red'} });
+                        multi.set(arr.iterators+","+it.iterators,3);
+                    }
+                    else if (multi.get(arr.iterators+","+it.iterators) != 3) {
+                        edges.update({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: '#B660E8', highlight: '#B660E8'} });
+                        multi.set(arr.iterators+","+it.iterators,4);
+                    }
+                }
+            }
+        }
+
+        /*var elems = elem_map.toArray();
+        var from;
+        var from_reformed;
+        var to;
+        var to_reformed;
+        for (i = 0; i < its.length; i++) {
+            if (max_its == 1) {
+                from = elems[i].indices[0];
+                from_reformed = graph_links.get(from+"");
+                for (j = 0; j < elems[i].to.length; j++) {
+                    to_reformed = graph_links.get(elems[i].to[j][0].indices[0]+"");
+                    edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+"" })
+                    if (multi.get(from_reformed) == null) {
+                        nodes.update({id: from_reformed, color: '#FF7C23'})
+                        multi.set(from_reformed,1);
+                    }
+                    else if (multi.get(from_reformed) == 2) {
+                        nodes.update({id: from_reformed, color: '#B660E8'})
+                        multi.set(from_reformed,3);
+                    }
+                    if (multi.get(to_reformed) == null) {
+                        nodes.update({id: to_reformed, color: '#5889FF'})
+                        multi.set(to_reformed,2);
+                    }
+                    else if (multi.get(to_reformed) == 1) {
+                        nodes.update({id: to_reformed, color: '#B660E8'})
+                        multi.set(to_reformed,3);
+                    }
+
+                }
+            }
+            else if (dimensions == 2) {
+                from = elems[i].indices;
+                from_reformed = graph_links.get(from[0]+","+from[1]);
+                for (j = 0; j < elems[i].to.length; j++) {
+                    to = elems[i].to[j][0].indices;
+                    to_reformed = graph_links.get(to[0]+","+to[1]);
+                    edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+""});
+
+                    if (multi.get(from_reformed) == null) {
+                        nodes.update({id: from_reformed, color: '#FF7C23'})
+                        multi.set(from_reformed,1);
+                    }
+                    else if (multi.get(from_reformed) == 2) {
+                        nodes.update({id: from_reformed, color: '#B660E8'})
+                        multi.set(from_reformed,3);
+                    }
+                    if (multi.get(to_reformed) == null) {
+                        nodes.update({id: to_reformed, color: '#5889FF'})
+                        multi.set(to_reformed,2);
+                    }
+                    else if (multi.get(to_reformed) == 1) {
+                        nodes.update({id: to_reformed, color: '#B660E8'})
+                        multi.set(to_reformed,3);
+                    }
+                }
+            }
+        }*/
+
+        var options = {
+        width: width+'px',
+        height: height+'px',
+        nodes: {
+            font: {face: 'Arvo', color: 'white', size: Math.floor(node_size*0.85)},
+            color: {
+                background: '#888',
+                highlight: 'blue'
+            },
+            shape: 'circle',
+            borderWidth: 0
+        },
+        edges: {
+            font: {face: 'Arvo', color: '#444', size: Math.floor(node_size*0.85)},
+            smooth: {
+                type: 'curvedCW',
+                forceDirection: 'none'
+            },
+            arrows: {
+                to: {
+                    enabled: true
+                }
+            },
+            color: {
+                color: '#333',
+                highlight: 'red'
+            }
+        },
+        physics: false,
+        interaction: {
+            dragNodes: false,
+            zoomView: true,
+            dragView: true
+        }
+        };
+
+        var network = new vis.Network(container, data, options);
+        network.moveTo({
+        position: {x: 0, y: 0},
+        offset: {x: -Math.floor(width*0.9/2), y: -Math.floor(height*0.9/2)},
+        scale: 1,
+        })
+
+        //console.log(nodes);
+        /*console.log(elem_map);
+        console.log(min_dimension);
+        console.log(max_dimension);
+        console.log(direction);
+        console.log(dimensions);*/
+        document.getElementById('labels_itspc').style.display = 'inline-block';
+        document.getElementById('labels_dpgph').style.display = 'none';
+        //document.getElementById('direction_vector').innerHTML = "["+direction+"]";
     }
 
-    var elems = elem_map.toArray();
-    var from;
-    var from_reformed;
-    var to;
-    var to_reformed;
-    for (i = 0; i < elems.length; i++) {
-        if (dimensions == 1) {
-            from = elems[i].indices[0];
-            from_reformed = graph_links.get(from+"");
-            for (j = 0; j < elems[i].to.length; j++) {
-                to_reformed = graph_links.get(elems[i].to[j][0].indices[0]+"");
-                edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+"" })
-                if (multi.get(from_reformed) == null) {
-                    nodes.update({id: from_reformed, color: '#FF7C23'})
-                    multi.set(from_reformed,1);
-                }
-                else if (multi.get(from_reformed) == 2) {
-                    nodes.update({id: from_reformed, color: '#B660E8'})
-                    multi.set(from_reformed,3);
-                }
-                if (multi.get(to_reformed) == null) {
-                    nodes.update({id: to_reformed, color: '#5889FF'})
-                    multi.set(to_reformed,2);
-                }
-                else if (multi.get(to_reformed) == 1) {
-                    nodes.update({id: to_reformed, color: '#B660E8'})
-                    multi.set(to_reformed,3);
-                }
+    else if (option == 2) {
 
+        /*function set_or_add(a, a2, b, b2, type) {
+            var dist = [];
+
+            for (var i = 0; i < a2.indices.length; i ++) {
+                dist[i] = b2.indices[i] - a2.indices[i];
+            }
+
+            if (stmt_deps.has(a.nr+","+b.nr)) {
+                var arr = stmt_deps.get(a.nr+","+b.nr);
+                arr.push([a,b,type,dist]);
+            }
+            else {
+                var arr = new Array();
+                arr.push([a,b,type,dist]);
+                stmt_deps.set(a.nr+","+b.nr,arr);
             }
         }
-        else if (dimensions == 2) {
-            from = elems[i].indices;
-            from_reformed = graph_links.get(from[0]+","+from[1]);
-            for (j = 0; j < elems[i].to.length; j++) {
-                to = elems[i].to[j][0].indices;
-                to_reformed = graph_links.get(to[0]+","+to[1]);
-                edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+""});
 
-                if (multi.get(from_reformed) == null) {
-                    nodes.update({id: from_reformed, color: '#FF7C23'})
-                    multi.set(from_reformed,1);
+        for (i = 1; i < statements.length; i++) {
+            for (j = 0; j < i; j++) {
+                for (k = 0; k < statements[i].reads.length; k++) { // raw
+                    for (h = 0; h < statements[j].writes.length; h++) {
+                        if (statements[i].reads[k].key == statements[j].writes[h].key) set_or_add(statements[j],statements[j].writes[h],statements[i],statements[i].reads[k],"raw");
+                    }
                 }
-                else if (multi.get(from_reformed) == 2) {
-                    nodes.update({id: from_reformed, color: '#B660E8'})
-                    multi.set(from_reformed,3);
+                for (k = 0; k < statements[i].writes.length; k++) {
+                    for (h = 0; h < statements[j].reads.length; h++) { // war
+                        if (statements[i].writes[k].key == statements[j].reads[h].key) set_or_add(statements[j],statements[j].reads[h].key,statements[i],statements[i].writes[k].key,"war");
+                    }
+                    for (h = 0; h < statements[j].writes.length; h++) { // waw
+                        if (statements[i].writes[k].key == statements[j].writes[h].key) set_or_add(statements[j],statements[j].writes[h].key,statements[i],statements[i].writes[k].key,"waw");
+                    }
                 }
-                if (multi.get(to_reformed) == null) {
-                    nodes.update({id: to_reformed, color: '#5889FF'})
-                    multi.set(to_reformed,2);
+            }
+        }*/
+
+       for (i = 0; i < statements.length; i++) {
+           for (j = 0; j < statements[i].reads.length; j++) {
+                if (stmt_reads.has(statements[i].reads[j].key)) { 
+                    var arr = stmt_reads.get(statements[i].reads[j].key);
                 }
-                else if (multi.get(to_reformed) == 1) {
-                    nodes.update({id: to_reformed, color: '#B660E8'})
-                    multi.set(to_reformed,3);
+                else {
+                    var arr = new Array();
+                    stmt_reads.set(statements[i].reads[j].key,arr);
+                }
+                if (stmt_writes.has(statements[i].reads[j].key)) { // Read after Write
+                    make_deps([statements[i].nr,statements[i].iterators], stmt_writes.get(statements[i].reads[j].key), 'raw');
+                }
+                arr.push([statements[i].nr,statements[i].iterators]);
+           }
+           for (j = 0; j < statements[i].writes.length; j++) {
+                if (stmt_reads.has(statements[i].writes[j].key)) { // Write after Read
+                    make_deps([statements[i].nr,statements[i].iterators], stmt_reads.get(statements[i].writes[j].key), 'war');
+                }
+                if (stmt_writes.has(statements[i].writes[j].key)) { // Write after Write
+                    make_deps([statements[i].nr,statements[i].iterators], stmt_writes.get(statements[i].writes[j].key), 'waw');
+                }
+                stmt_writes.set(statements[i].writes[j].key,[statements[i].nr,statements[i].iterators]);
+           }
+       }
+
+       function make_deps(stmt, arr, which) {
+            if (which == 'war') {
+                for (var i = 0; i < arr.length; i++) {
+                    if (deps.has(stmt[0]+","+arr[i][0])) {
+                        var dep = deps.get(stmt[0]+","+arr[i][0]);
+                    }
+                    else {
+                        var dep = new Array()
+                    }
+                    deps.set(stmt[0]+","+arr[i][0],dep);
+                    var dir = get_direction(get_distance(stmt[1],arr[i][1]));
+                    if (!check_dep([dir,'war',stmt[0],arr[i][0]],dep)) {
+                        dep.push([dir,'war',stmt[0],arr[i][0]]);
+                    }
+                }
+            }
+            else {
+                if (deps.has(arr[0]+","+stmt[0])) {
+                    var dep = deps.get(arr[0]+","+stmt[0]);
+                }
+                else {
+                    var dep = new Array();
+                    deps.set(arr[0]+","+stmt[0],dep);
+                }
+                var dir = get_direction(get_distance(arr[1],stmt[1]));
+                if (!check_dep([dir,which,arr[0],stmt[0]],dep)) {
+                    dep.push([dir,which,arr[0],stmt[0]]);
+                }
+            }
+       }
+
+       function check_dep(d,dep) {
+           for (var i = 0; i < dep.length; i++) {
+               if (d[0].toString() == dep[i][0].toString() && d[1] == dep[i][1]) {
+                   return true;
+               }
+           }
+           return false;
+       }
+
+    var ds = deps.entriesArray();
+
+    for (i = 0; i < ds.length; i++) {
+        for (j = 0; j < ds[i][1].length; j++) {
+            for (k = j+1; k < ds[i][1].length; k++) {
+                if ( ds[i][1][j][1] == ds[i][1][k][1] ) {
+                    for (h = 0; h < ds[i][1][j][0].length; h++) {
+                        if ( ds[i][1][j][0][h] != ds[i][1][k][0][h] ) { ds[i][1][j][0][h] = '*'; }
+                    }
                 }
             }
         }
+        var arr = new Array();
+        var raw = 0;
+        var war = 0;
+        var waw = 0;
+        for (j = 0; j < ds[i][1].length; j++) {
+            if (ds[i][1][j][1] == 'raw' && raw == 0) {
+                arr.push(ds[i][1][j]);
+                raw = 1;
+            }
+            if (ds[i][1][j][1] == 'war' && war == 0) {
+                arr.push(ds[i][1][j]);
+                war = 1;
+            }
+            if (ds[i][1][j][1] == 'waw' && waw == 0) {
+                arr.push(ds[i][1][j]);
+                waw = 1;
+            }
+        }
+        ds[i][1] = arr;
+    }
+
+    for (i = 1; i <= ast.stmt_nr; i++) {
+        nodes.add({id: i, label: "S"+i.toString()});
+    }
+
+    for (i = 0; i < ds.length; i++) {
+        var delta = "";
+        for (j = 0; j < ds[i][1].length; j++) {
+            console.log(to_delta(ds[i][1][j]));
+            delta = delta + to_delta(ds[i][1][j]) + ",";
+        }
+        delta = delta.substr(0,delta.length-1);
+        edges.add({from: ds[i][1][0][2], to: ds[i][1][0][3], label: delta});
     }
 
     var options = {
-    width: width+'px',
-    height: height+'px',
-    nodes: {
-        font: {face: 'Arvo', color: 'white', size: Math.floor(node_size*0.85)},
-        color: 'lightgray',
-        shape: 'circle',
-        borderWidth: 1,
-    },
-    edges: {
-        font: {face: 'Arvo', color: '#444', size: Math.floor(node_size*0.85)},
-        smooth: {
-            type: 'curvedCW',
-            forceDirection: 'none'
+        width: width+'px',
+        height: height+'px',
+        nodes: {
+            font: {face: 'Arvo', color: 'white', size: 30},
+            color: {
+                background: '#888',
+                highlight: 'blue',
+            },
+            margin:10,
+            shape: 'circle',
+            borderWidth: 0,
         },
-        arrows: {
-            to: {
-                enabled: true
+        edges: {
+            font: {face: 'Arvo', color: '#444', size: 25},
+            smooth: {
+                type: 'curvedCW',
+                forceDirection: 'none'
+            },
+            arrows: {
+                to: {
+                    enabled: true
+                }
+            },
+            color: {
+                color: '#666',
+                highlight: 'red'
             }
         },
-        color: {
-            color: 'darkgrey'
+        physics: true,
+        interaction: {
+            dragNodes: true,
+            zoomView: true,
+            dragView: true
         }
-    },
-    physics: false,
-    interaction: {
-        dragNodes: false,
-        zoomView: true,
-        dragView: true
+        };
+
+        var network = new vis.Network(container, data, options);
+        network.moveTo({
+        position: {x: -width/2, y: -height/2},
+        //offset: {x: -Math.floor(width*0.9/2), y: -Math.floor(height*0.9/2)},
+        scale: 1,
+        })
+
+        //document.getElementById('labels_dpgph').style.display = 'inline-block';
+        document.getElementById('labels_itspc').style.display = 'none';
     }
-    };
 
-    var network = new vis.Network(container, data, options);
-    network.moveTo({
-    position: {x: 0, y: 0},
-    offset: {x: -Math.floor(width*0.9/2), y: -Math.floor(height*0.9/2)},
-    scale: 1,
-    })
-
-    //console.log(nodes);
-    /*console.log(elem_map);
-    console.log(min_dimension);
-    console.log(max_dimension);
-    console.log(direction);
-    console.log(dimensions);*/
-    
-    document.getElementById('direction_vector').innerHTML = "["+direction+"]";
 });
 
     

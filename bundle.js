@@ -2946,15 +2946,18 @@ var cpdVisitor = require('./cpdVisitor').cpdVisitor;
 
 // AST
 
+var cnt = 0;
+
 function AST() {
     this.type = "ast";
     this.stmt_list = [];
 }
 
-function Assign_Stmt(lhs,rhs) {
+function Assign_Stmt(lhs,rhs,nr) {
     this.type = "assign";
     this.lhs = lhs;
     this.rhs = rhs;
+    this.nr = nr;
 }
 
 function Do_Stmt(it,start,end,step,stmt_list) {
@@ -3060,7 +3063,8 @@ ASTBuilder.prototype.visitDo_stmt = function(ctx) {
 ASTBuilder.prototype.visitAssign_stmt = function(ctx) {
     var lhs = this.visit(ctx.children[0]);
     var rhs = this.visit(ctx.children[2]);
-    return new Assign_Stmt(lhs,rhs);
+    cnt ++;
+    return new Assign_Stmt(lhs,rhs,cnt);
 };
 
 ASTBuilder.prototype.visitIf_stmt = function(ctx) {
@@ -3247,6 +3251,7 @@ ASTBuilder.prototype.visitVarname = function(ctx) {
 
 window.parse_routine = function(code){
     console.log("Parsing input code...");
+    cnt = 0;
     var chars = new antlr4.InputStream(code);
     var lexer = new cpdLexer(chars);
     var tokens  = new antlr4.CommonTokenStream(lexer);
@@ -3254,6 +3259,7 @@ window.parse_routine = function(code){
     parser.buildParseTrees = true;
     var cst = parser.compileUnit();
     var ast = new ASTBuilder().visitCompileUnit(cst);
+    ast.stmt_nr = cnt;
     return ast;
 };
 },{"./cpdLexer":1,"./cpdParser":3,"./cpdVisitor":4,"antlr4/index":47}],6:[function(require,module,exports){
