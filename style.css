@@ -211,6 +211,17 @@ body {
   display:block;
 }
 
+#console {
+  background: #333;
+  color: #c7c7c7;
+  list-style-type: none;
+  margin-left:10px;
+  margin-right:10px;
+  padding:5px;
+  font-size:16px;
+  font-family: monospace;
+}
+
 [include*="form-input-select()"] {
     display: block;
     padding: 0;

@@ -67,6 +67,17 @@ ENDDO
     ENDDO
 ENDDO
 `;
+    test[9] = `DO i = 1,100
+	x(i) = y(i) + 10
+	DO j = 1,100
+		b(j) = a(j,n)
+		DO k = 1,100
+ 			a(j+1,k) = b(j)+c(j,k)
+		ENDDO
+		y(i+j) = a(j+1,n)
+	ENDDO
+ENDDO
+`;
     $editor.setValue(test[nr]);
 }
 </script>
@@ -214,12 +225,17 @@ setInterval(updateGradient,10);
                   <li><a href="#">Dependency Graph</a>
                     <ul>
                       <li><a href="#" onclick="load_test(8); return false;">Two Statements</a></li>
+                      <li><a href="#" onclick="load_test(9); return false;">Slide</a></li>
                     </ul>
                   </li>
                 </ul>
               </li>
             </ul>
             </nav>
+            <div id ="console" style="overflow-y: scroll; height:200px;">
+            
+            </div>
+        
 </div>
     
 <div id="printer">
@@ -245,7 +261,19 @@ setInterval(updateGradient,10);
 </div>
 <div id="footer"></div>
     
-<script type="text/javascript">   
+<script type="text/javascript"> 
+
+function add_to_console(line,color) {
+        var d = new Date();
+        var ul = document.getElementById("console");
+        var li = document.createElement("li");
+        li.appendChild(document.createTextNode(d.toLocaleTimeString()+": "+line));
+        li.style = "color: "+color+";";
+        ul.appendChild(li);
+        ul.scrollTop = ul.scrollHeight;
+    }
+
+add_to_console("App loaded","#c7c7c7");
     
 var $editor = CodeMirror(document.getElementById('code'), {
   value: "INPUT CODE HERE...",
@@ -256,26 +284,66 @@ var $editor = CodeMirror(document.getElementById('code'), {
 document.getElementById("run_button").addEventListener("click", function(){
     var input = $editor.getValue();
     input += '\n';
+    add_to_console('Parsing...','#c7c7c7');
     var ast = parse_routine(input);
-    
-function Memory(id,indices,key) {
-    this.id = id;
-    this.indices = indices;
+    add_to_console('Parsing done','#c7c7c7');
+
+    function Memory(key) {
+    //this.id = id;
+    //this.indices = indices;
     this.key = key;
-    var state;
 }
 
-function Iteration(iterators,statements,deepness) {
-    this.iterators = iterators;
-    this.statements = statements;
-    this.deepness = deepness;
+var tab = 0;
+var tab_size = 50;
+var line_cnt = 1;
+
+function code_visualizer (ast) {
+    for (var i = 0 ; i < ast.stmt_list.length; i ++) {
+        code_visualizer_stmt(ast.stmt_list[i]);
+    }
 }
 
-function Statement(nr) {
-    this.nr = nr;
-    var writes;
-    var reads;
-    var iterators;
+function code_visualizer_stmt (stmt) {
+    if (stmt.type == "do") {
+        code_visualizer_do_top(stmt);
+        tab += tab_size;
+        for (var i = 0; i < do_stmt.stmt_list.length; i ++) {
+            code_visualizer_stmt(do_stmt.stmt_list[i]);
+        }
+        code_visualizer_do_end();
+
+    }
+    else if (stmt.type == "assign") {
+
+    }
+}
+
+function code_visualizer_do_top(stmt) {
+    var div = document.createElement("code_visualizer_line_"+line_cnt++);
+    div.innerHTML = "DO "+stmt.it+" = "+stmt.start+","+stmt.end;
+}
+
+function code_visualizer_do_end() {
+    var div = document.createElement("code_visualizer_line_"+line_cnt++);
+    div.innerHTML = "ENDDO";
+}
+
+function it_diff(it1, it2) {
+    var result = 1;
+    var smaller_size = it1.length < it2.length ? it1.length : it2.length;
+    for (var i = 0; i < smaller_size; i ++) {
+        if (it1[i][1] == it2[i][1]) {
+            result++;
+        }
+        else {
+            break;
+        }
+    }
+    if (result == smaller_size + 1) {
+        result = -1;
+    }
+    return result;
 }
 
 function evaluate(expr) { // A(expr,expr) -> evaluates expr for current iteration
@@ -322,12 +390,197 @@ function evaluate(expr) { // A(expr,expr) -> evaluates expr for current iteratio
     }
 }
 
+function evaluate_array(expr) { // A(expr,expr) -> evaluates expr for current iteration
+    var type = expr.type;
+    var op = expr.op;
+    var lhs = expr.lhs;
+    var rhs = expr.rhs;
+
+    if ( type == "op" ) {
+        if (lhs == null) {
+            if (op == "-") return -evaluate_array(rhs);
+            else if (op == "+") return evaluate_array(rhs);
+            // else console.log("Not a valid operation: "+expr);
+        }
+        else {
+            if (op == "+") return evaluate_array(lhs) + evaluate_array(rhs);
+            else if (op == "-") return evaluate_array(lhs) - evaluate_array(rhs);
+            else if (op == "*") return evaluate_array(lhs) * evaluate_array(rhs);
+            else if (op == "/") return evaluate_array(lhs) / evaluate_array(rhs);
+            else if (op == "%") return evaluate_array(lhs) % evaluate_array(rhs);
+            //else console.log("Not a valid operation: "+expr);
+        }
+    }
+    else if ( type == "val" ) {
+        return expr.val;
+    }
+    else if (type == "var" ) {
+        if (iterators.has(expr.variable)) return iterators.get(expr.variable);
+        else {
+            stop_the_program = true;
+            variables_in_array.push(expr.variable);
+            return 0;
+        }
+    }
+    else if (type == "array") {
+        variables_in_array.push(expr.id);
+        stop_the_program = true;
+        return 0;
+    }
+    else {
+        //console.log("Not a valid expr: "+expr); 
+    }
+}
+
+function evaluate_iterator(expr) { // A(expr,expr) -> evaluates expr for current iteration
+    var type = expr.type;
+    var op = expr.op;
+    var lhs = expr.lhs;
+    var rhs = expr.rhs;
+
+    if ( type == "op" ) {
+        if (lhs == null) {
+            if (op == "-") return -evaluate_iterator(rhs);
+            else if (op == "+") return evaluate_iterator(rhs);
+            // else console.log("Not a valid operation: "+expr);
+        }
+        else {
+            if (op == "+") return evaluate_iterator(lhs) + evaluate_iterator(rhs);
+            else if (op == "-") return evaluate_iterator(lhs) - evaluate_iterator(rhs);
+            else if (op == "*") return evaluate_iterator(lhs) * evaluate_iterator(rhs);
+            else if (op == "/") return evaluate_iterator(lhs) / evaluate_iterator(rhs);
+            else if (op == "%") return evaluate_iterator(lhs) % evaluate_iterator(rhs);
+            //else console.log("Not a valid operation: "+expr);
+        }
+    }
+    else if ( type == "val" ) {
+        return expr.val;
+    }
+    else if (type == "var" ) {
+        if (iterators.has(expr.variable)) return iterators.get(expr.variable);
+        else {
+            stop_the_program = true;
+            variables_in_iterator.push(expr.variable);
+            return 0;
+        }
+    }
+    else if (type == "array") {
+        stop_the_program = true;
+        variables_in_iterator.push(expr.variable);
+        return 0;
+    }
+    else {
+        //console.log("Not a valid expr: "+expr); 
+    }
+}
+
 function simulate_expr(expr,side) {
     if (expr.type == "array") {
-        var memory = get_memory(expr);
-        memory.state = iterators.clone();
-        if (side == "lhs") writes.push(memory); 
-        else if (side == "rhs") reads.push(memory);
+        var memory = get_memory(expr).key;
+        if (option == 2) {
+            if (side == "lhs") {
+                // testing dependency
+                if (writes.has(memory)) {
+                    var m = writes.get(memory).entriesArray();
+                    for (var i = 0; i < m.length; i ++) {
+                        if (!waw_map.has([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())].toString())) {
+                            waw.push([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())]);
+                            waw_map.set([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())].toString(),1);
+                        }
+                        if (!waw_map.has([m[i][0],current_stmt,it_diff(iterators.entriesArray(),m[i][1])].toString())) {
+                            waw.push([m[i][0],current_stmt,it_diff(iterators.entriesArray(),m[i][1])]);
+                            waw_map.set([m[i][0],current_stmt,it_diff(iterators.entriesArray(),m[i][1])].toString(),1);
+                        }
+                    }
+                }
+
+                if (reads.has(memory)) {
+                    var m = reads.get(memory).entriesArray();
+                    for (var i = 0; i < m.length; i ++) {
+                        if (!war_map.has([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())].toString())) {
+                            war.push([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())]);
+                            war_map.set([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())].toString(),1);
+                        }
+                    }
+                }
+
+                // adding write
+                if (writes.has(memory)) {
+                    var m = writes.get(memory);
+                    if (!m.has(current_stmt)) {
+                        m.set(current_stmt,iterators.entriesArray());
+                    }
+                }
+                else {
+                    var m = new Map();
+                    m.set(current_stmt,iterators.entriesArray());
+                    writes.set(memory,m);
+                }
+                reads.delete(memory);
+            }
+            else if (side == "rhs") {
+                // testing dependency
+                if (writes.has(memory)) {
+                    var m = writes.get(memory).entriesArray();
+                    for (var i = 0; i < m.length; i ++) {
+                        if (!raw_map.has([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())].toString())) {
+                            raw.push([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())]);
+                            raw_map.set([m[i][0],current_stmt,it_diff(m[i][1],iterators.entriesArray())].toString(),1);
+                        }
+                    }
+                }
+
+                // adding read
+                if (reads.has(memory)) {
+                    var m = reads.get(memory);
+                    if (!m.has(current_stmt)) {
+                        m.set(current_stmt,iterators.entriesArray());
+                    }
+                }
+                else {
+                    var m = new Map();
+                    m.set(current_stmt,iterators.entriesArray());
+                    reads.set(memory,m);
+                }
+            }
+        }
+        else {
+            if (side == "lhs") {
+                // testing dependency
+                if (writes_it.has(memory)) {
+                    var m = writes_it.get(memory);
+                    waw_it.push([m,iterators.entriesArray()]);
+                }
+
+                if (reads_it.has(memory)) {
+                    var m = reads_it.get(memory);
+                    for (var i = 0; i < m.length; i ++) {
+                        war_it.push([iterators.entriesArray(),m[i]]);
+                    }
+                }
+
+                // adding write
+                writes_it.set(memory,iterators.entriesArray());
+                reads_it.delete(memory);
+            }
+            else if (side == "rhs") {
+                // testing dependency
+                if (writes_it.has(memory)) {
+                    var m = writes_it.get(memory);
+                    raw_it.push([m,iterators.entriesArray()]);
+                }
+
+                // adding read
+                if (reads_it.has(memory)) {
+                    var m = reads_it.get(memory);
+                }
+                else {
+                    var m = new Array();
+                    reads_it.set(memory,m);
+                }
+                m.push(iterators.entriesArray());
+            }
+        }
     }
     else if (expr.type == "op") {
         simulate_expr(expr.lhs,side);
@@ -342,17 +595,9 @@ function simulate_stmts(stmt_list) {
             simulate_do(stmt);
         }
         else if (stmt.type == "assign") {
-            statement = new Statement(stmt.nr);
-            statement.iterators = iterators.entriesArray();
-            var wr = writes.length;
-            var rd = reads.length;
-            simulate_expr(stmt.lhs,"lhs");
+            current_stmt = stmt.nr;
             simulate_expr(stmt.rhs,"rhs");
-            //link_stuff(writes.slice(wr-writes.length),reads.slice(rd-reads.length));
-            statement.writes = writes.slice(wr-writes.length);
-            statement.reads = reads.slice(rd-reads.length);
-            iterations.get(iterators.entriesArray().toString()).statements.push(statement);
-            statements.push(statement);
+            simulate_expr(stmt.lhs,"lhs");
         }
         else if (stmt.type == "if") {
             if (evaluate(stmt.expr)) {
@@ -375,34 +620,49 @@ function simulate_stmts(stmt_list) {
 
 function simulate_do(do_stmt) {
     var it = do_stmt.it;
-    iterators.set(it,evaluate(do_stmt.start));
-    //iterators_in_use.set(it,true);
+    iterators.set(it,evaluate_iterator(do_stmt.start));
     var step;
     if (do_stmt.step == null) step = 1;
-    else { step = evaluate(do_stmt.step); }
+    else { step = evaluate_iterator(do_stmt.step); }
     deepness++;
+    if (deepness > 2 && option == 1) {  too_deep = 1; }
+    if (!stop_the_program) { 
 
-    if (iterators.get(it) > evaluate(do_stmt.end)) {
+    if (iterators.get(it) > evaluate_iterator(do_stmt.end) && too_deep == 0) {
         if (step > 0) { step = -step; }
 
-        while (iterators.get(it) >= evaluate(do_stmt.end) ) {
-            iterations.set(iterators.entriesArray().toString(), new Iteration(iterators.entriesArray(), new Array(), deepness));
+        while (iterators.get(it) >= evaluate_iterator(do_stmt.end) ) {
+            if (option == 1) {
+                if (deepness == 1) {
+                    iterations_1.push(iterators.entriesArray());
+                }
+                else {
+                    iterations_2.push(iterators.entriesArray());
+                }
+            }
             simulate_stmts(do_stmt.stmt_list);
             var next_step = iterators.get(it)+step;
             iterators.set(it,next_step);
         }
     }
     else {
-        while (iterators.get(it) <= evaluate(do_stmt.end) ) {
-            iterations.set(iterators.entriesArray().toString(), new Iteration(iterators.entriesArray(), new Array(), deepness));
+        while (iterators.get(it) <= evaluate_iterator(do_stmt.end) ) {
+            if (option == 1) {
+                if (deepness == 1) {
+                    iterations_1.push(iterators.entriesArray());
+                }
+                else {
+                    iterations_2.push(iterators.entriesArray());
+                }
+            }
             simulate_stmts(do_stmt.stmt_list);
             var next_step = iterators.get(it)+step;
             iterators.set(it,next_step);
         }
     }
+    }
     deepness--;
     iterators.delete(it);
-    //iterators_in_use.delete(it);
 }
 
 function get_memory(array_call) { // eg A(i,j) with i = 5, j = 2 -> MEM(A:5,2)
@@ -410,75 +670,17 @@ function get_memory(array_call) { // eg A(i,j) with i = 5, j = 2 -> MEM(A:5,2)
     var indices = [];
     var key = "";
 
-    var key = "MEM(" + id + ":";
+    var key = id + ":";
 
     for (var i = 0; i < array_call.index_list.length; i++) {
-        current_index = evaluate(array_call.index_list[i]);
+        current_index = evaluate_array(array_call.index_list[i],true);
         indices.push(current_index);
         key += current_index + ",";
     }
 
     key = key.substring(0,key.length-1);
-    key += ")";
 
-    for (i = 0; i < indices.length; i ++) {
-        if (max_dimension[i] < indices[i]) {
-            max_dimension[i] = indices[i];
-        }
-        if (min_dimension[i] > indices[i]) {
-            min_dimension[i] = indices[i];
-        }
-        if (i == 2) {
-            break;
-        }
-    }
-
-    return new Memory(id,indices,key);
-}
-
-var elem_map = new Map();
-
-function Elem(id,indices,to) {
-    this.id = id;
-    this.indices = indices;
-    this.to = to;
-}
-
-function link_stuff(writes,reads) {
-    if (writes.length != 0 && reads.length != 0) {
-        var wr = writes[0];
-        var rd;
-
-        if (!elem_map.has(wr.key)) {
-            elem_map.set(wr.key,new Elem(wr.id,wr.indices,[]));
-        }
-
-        for (var i = 0; i < reads.length; i ++) {
-            rd = reads[i];
-            if (!elem_map.has(rd.key)) {
-                elem_map.set(rd.key,new Elem(rd.id,rd.indices,[]));
-            }
-            var elem = elem_map.get(rd.key);
-            elem.to.push([elem_map.get(wr.key),calculate_distance(wr.indices,rd.indices)]);
-        }
-    }
-}
-
-function calculate_distance(wr,rd) {
-    var distances = [];
-    for (var i = 0; i < wr.length; i++) {
-        distances.push(wr[i]-rd[i]);
-    }
-    return distances;
-}
-
-function no_of_dims() {
-    if (max_dimension[2] != -1) return 3;
-    if (max_dimension[0] != -1){
-        if (max_dimension[1] != -1) return 2;
-        return 1;
-    }
-    return 0;
+    return new Memory(key);
 }
 
 function run_simulation(ast) {
@@ -490,18 +692,18 @@ function calculate_graph_point() {
     var distance_in_between = [];
 
     if (max_deepness == 1) {
-        diff = its.length-1;
+        diff = iterations_1.length-1;
         space_per_node = Math.floor((width*0.9)/(diff+1));
         node_itself[0] = Math.ceil(space_per_node*0.7);
         distance_in_between[0] = Math.floor(space_per_node*0.3);
         return [node_itself[0],distance_in_between[0]];
     }
     else if (max_deepness == 2) {
-        diff = iterations.length-its.length-1;
+        diff = iterations_1.length-1;
         space_per_node = Math.floor((height*0.9)/(diff+1));
         node_itself[0] = Math.ceil(space_per_node*0.4);
         distance_in_between[0] = Math.floor(space_per_node*0.6);
-        diff = its.length/(iterations.length - its.length)-1;
+        diff = (iterations_2.length/iterations_1.length)-1;
         space_per_node = Math.floor((width*0.9)/(diff+1));
         node_itself[1] = Math.ceil(space_per_node*0.7);
         distance_in_between[1] = Math.floor(space_per_node*0.3);
@@ -510,8 +712,10 @@ function calculate_graph_point() {
     return null;
 }
 
-function get_distance(from, to) {
+function get_distance(dep) {
     var arr = new Array();
+    var from = dep[0];
+    var to = dep[1];
     if (from.length < to.length) {
         for (var i = 0; i < from.length; i++) {
             arr.push(to[i][1]-from[i][1]);
@@ -535,86 +739,77 @@ function get_direction(dist) {
     return dist;
 }
 
-function to_delta(dep) {
+function get_delta(dep,type) {
     var build = "δ";
-    var i = 0;
-
-    while (i < dep[0].length && dep[0][i] == '=') {
-        i++;
+    if (type == 'war') {
+        build = build + "⁻¹";
     }
-    if (i == dep[0].length) {
+    else if (type == 'waw') {
+        build = build + "⁰";
+    }
+    if (dep == -1) {
         build = build + "∞";
     }
     else {
         var sub;
-        if (i+1 == 1) {
+        if (dep == 1) {
             sub = '₁';
         }
-        else if (i+1 == 2) {
+        else if (dep == 2) {
             sub = '₂';
         }
-        else if (i+1 == 3) {
+        else if (dep == 3) {
             sub = '₃';
         }
-        else if (i+1 == 4) {
+        else if (dep == 4) {
             sub = '₄';
         }
-        else if (i+1 == 5) {
+        else if (dep == 5) {
             sub = '₅';
         }
-        else if (i+1 == 6) {
+        else if (dep == 6) {
             sub = '₆';
         }
-        else if (i+1 == 7) {
+        else if (dep == 7) {
             sub = '₇';
         }
-        else if (i+1 == 8) {
+        else if (dep == 8) {                           
             sub = '₈';
         }
-        else if (i+1 == 9) {
+        else if (dep == 9) {
             sub = '₉';
         }
 
         build = build + sub;
     }
-    if (dep[1] == 'war') {
-        build = build + "⁻¹";
-    }
-    else if (dep[1] == 'waw') {
-        build = build + "⁰";
-    }
-
     return build;
 }
 
-    
-    // iterators
+    // simulation 
     var iterators = new Map();
-    var iterators_in_use = new Map();
-    var iterations = new Map();
-    
-    var it_reads = new Map();
-    var it_writes = new Map();
+    var reads = new Map();
+    var writes = new Map();
+    var reads_it = new Map();
+    var writes_it = new Map();
+    var current_stmt = 0;
+    var variables_in_array = new Array();
+    var variables_in_iterator = new Array();
+    var too_deep = 0;
+    var iterations_1 = new Array();
+    var iterations_2 = new Array();
+    var stop_the_program = false;
 
-    // statements
+    // dependencies
+    var raw = new Array();
+    var war = new Array();
+    var waw = new Array();
+    var raw_it = new Array();
+    var war_it = new Array();
+    var waw_it = new Array();
+    var raw_map = new Map();
+    var war_map = new Map();
+    var waw_map = new Map();
 
-    var statements = new Array();
-    var stmt_reads = new Map();
-    var stmt_writes = new Map();
-    var deps = new Map();
-
-    // array
-    var max_dimension = [ [-1],[-1],[-1]];
-    var min_dimension = [ [100000],[100000],[100000]];
-
-    //
-
-    var links = [];
-    var writes = [];
-    var reads = [];
-    var iteration_space;
-    var dimensions;
-    var direction;
     var i;
     var j;
     var k;
@@ -629,37 +824,42 @@ function to_delta(dep) {
     var graph_links = new Map();
     var multi = new Map();
     var deepness = 0;
-    
-    run_simulation(ast);
-    iterations = iterations.toArray();
     var max_deepness = 0;
+    var edges_added = new Map();
+    
+    var e = document.getElementById('option');
+    var option = e.options[e.selectedIndex].value;
 
-    function iterations_filter(iteration) {
-        if (iteration.deepness == max_deepness) return true;
-        return false;
+    if (option == 1) {
+        add_to_console("Running simulation with option: iteration space...",'#c7c7c7');
+    }
+    else if (option == 2) {
+        add_to_console("Running simulation with option: dependency graph...","c7c7c7");
     }
 
-    function iterators_to_label(iterators) {
-        return iterators[0][1]+","+iterators[1][1];
+    run_simulation(ast);
+    if (variables_in_iterator.length > 0) {
+        add_to_console("ERROR [Unknown variable in iterator: "+variables_in_iterator[0]+"]. Use constants or other iterators",'orange');
+        option = 99;
     }
-
-    for (i = 0; i < iterations.length; i++) {
-        if (iterations[i].deepness > max_deepness) {
-            max_deepness = iterations[i].deepness;
-        }
+    else if (variables_in_array.length > 0) {
+        add_to_console("ERROR [Unknown variable in array call: "+variables_in_array[0]+"]. Use constants or iterators",'orange');
+        option = 99;
     }
-
-    its = iterations.filter(iterations_filter);
-
-    //dimensions = no_of_dims();
-
-
-    /*if (max_dimension[0] != -1) {
-        direction = get_direction();
+    else if (too_deep == 1) {
+        add_to_console("ERROR [Dimensionality too large]. Use 1D or 2D loops for option: iteration space",'orange');
+        option = 99;
     }
     else {
-        direction = null;
-    }*/
+        add_to_console("Simulation done",'green');
+    }
+
+    if (iterations_1.length != 0) {
+        max_deepness = 1;
+        if (iterations_2.length != 0) {
+            max_deepness = 2;
+        }
+    }
 
     // create an array with nodes
     var nodes = new vis.DataSet([]);
@@ -678,26 +878,23 @@ function to_delta(dep) {
 
     //nodes.on('*', function (event, properties, senderId) {});
 
-    var e = document.getElementById('option');
-    var option = e.options[e.selectedIndex].value;
     var width = window.innerWidth - 650 - 15;
 
     if (option == 1) {
-        
+        console.log(waw_it);
+        add_to_console("Building iteration space...");
         if (max_deepness == 1 || max_deepness == 2) {
             spacing = calculate_graph_point();
             current_x = (spacing[0]+spacing[1])/2;
             if (max_deepness == 1) {
                 node_size = 25 < spacing[0]/2 ? 25 : spacing[0]/2;
-                for (i = 0; i < its.length; i++) {
-                    nodes.add({id: cnt, label: its[cnt-1].iterators[0][1]+"", x: current_x, y: 265, size: node_size});
-                    graph_links.set(its[cnt-1].iterators,cnt);
+                for (i = 0; i < iterations_1.length; i++) {
+                    nodes.add({id: iterations_1[i].toString(), label: iterations_1[i][0][1]+"", x: current_x, y: 265, size: node_size});
                     current_x += spacing[0]+spacing[1];
-                    cnt++;
                 }
             }
             else if (max_deepness == 2) {
-                current_y = (spacing[0][0]+spacing[1][0])/2;
+                current_y = -(spacing[0][0]+spacing[1][0])/2;
                 if (spacing[0][0] < spacing[0][1]) {
                     node_size = spacing[0][0]/2;
                 }
@@ -705,150 +902,49 @@ function to_delta(dep) {
                     node_size = spacing[0][1]/2;
                 }
                 node_size = 25 < node_size ? 25 : node_size;
-                for (i = 0; i < iterations.length - its.length; i++) {
-                    current_x = (spacing[0][1]+spacing[1][1])/2;
-                    for (j = 0; j < its.length/(iterations.length - its.length); j++) {
-                        nodes.add({id: cnt, label: iterators_to_label(its[cnt-1].iterators), x: current_x, y: current_y, size: node_size});
-                        graph_links.set(its[cnt-1].iterators,cnt);
-                        current_x += spacing[0][1]+spacing[1][1];
-                        cnt++;
+                var rows = iterations_2.length/iterations_1.length;
+
+                for (i = 0; i < iterations_2.length; i++) {
+                    if (i % rows == 0) {
+                        current_x = (spacing[0][1]+spacing[1][1])/2;
+                        current_y += spacing[0][0]+spacing[1][0];
                     }
-                    current_x = (spacing[0][1]+spacing[1][1])/2;
-                    current_y += spacing[0][0]+spacing[1][0];
+                    nodes.add({id: iterations_2[i].toString(), label: iterations_2[i][0][1]+","+iterations_2[i][1][1], x: current_x, y: current_y, size: node_size});
+                    current_x += spacing[0][1]+spacing[1][1];
                 }
             }
         }
 
-
-        for (i = 0; i < its.length; i++) {
-            for (j = 0; j < its[i].statements.length; j++) {
-                var stmt = its[i].statements[j];
-                for (k = 0; k < stmt.reads.length; k++) {
-                    if (it_reads.has(stmt.reads[k].key)) {
-                        var arr = it_reads.get(stmt.reads[k].key);
-                    }
-                    else {
-                        var arr = new Array();
-                        it_reads.set(stmt.reads[k].key,arr);
-                    }
-                    if (it_writes.has(stmt.reads[k].key)) { // Read after Write
-                        make_graph(its[i], it_writes.get(stmt.reads[k].key), 'raw');
-                    }
-                    arr.push(its[i]);
-                }
-                for (k = 0; k < stmt.writes.length; k++) {
-                    if (it_reads.has(stmt.writes[k].key)) { // Write after Read
-                        make_graph(its[i], it_reads.get(stmt.writes[k].key), 'war');
-                    }
-                    if (it_writes.has(stmt.writes[k].key)) { // Write after Write
-                        make_graph(its[i], it_writes.get(stmt.writes[k].key), 'waw');
-                    }
-                    it_writes.set(stmt.writes[k].key,its[i]);
-                }
-            }
+        for (i = 0; i < raw_it.length; i ++) {
+            edges.add({id: raw_it[i].toString(), from: raw_it[i][0].toString(), to: raw_it[i][1].toString(), label: get_distance(raw_it[i]).toString(),  color: { color: '#FF7C23', highlight: '#FF7C23'}});
+            multi.set(raw_it[i].toString(),1);
         }
 
-        function make_graph(it, arr, which) {
-            if (which == 'war') {
-                for (var i = 0; i < arr.length; i ++) {
-                    if (!multi.has(arr[i].iterators+","+it.iterators)) {
-                        edges.add({from: graph_links.get(it.iterators), to: graph_links.get(arr[i].iterators), label: get_distance(it.iterators, arr[i].iterators).toString(), color: { color: '#5889FF', highlight: '#5889FF'} });
-                        multi.set(it.iterators+","+arr[i].iterators,2);
-                    }
-                    else if (multi.get(arr[i].iterators+","+it.iterators) != 2) {
-                        edges.update({from: graph_links.get(it.iterators), to: graph_links.get(arr[i].iterators), label: get_distance(it.iterators, arr[i].iterators).toString(), color: { color: '#B660E8', highlight: '#B660E8'} });
-                        multi.set(it.iterators+","+arr[i].iterators,4);
-                    }
-                }
+        for (i = 0; i < war_it.length; i ++) {
+            if (multi.get(war_it[i].toString()) == 1) {
+                edges.update({id: war_it[i].toString(), color: { color: '#B660E8', highlight: '#B660E8'}});
+                multi.set(war_it[i].toString(),10);
             }
             else {
-                if (which == 'raw') {
-                    if (!multi.has(arr.iterators+","+it.iterators)) {
-                        edges.add({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: '#FF7C23', highlight: '#FF7C23'} });
-                        multi.set(arr.iterators+","+it.iterators,1);
-                    }
-                    else if (multi.get(arr.iterators+","+it.iterators) != 1) {
-                        edges.update({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: '#B660E8', highlight: '#B660E8'} });
-                        multi.set(arr.iterators+","+it.iterators,4);
-                    }
-                }
-                else if (which == 'waw') {
-                    if (!multi.has(arr.iterators+","+it.iterators)) {
-                        edges.add({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: 'red', highlight: 'red'} });
-                        multi.set(arr.iterators+","+it.iterators,3);
-                    }
-                    else if (multi.get(arr.iterators+","+it.iterators) != 3) {
-                        edges.update({from: graph_links.get(arr.iterators), to: graph_links.get(it.iterators), label: get_distance(arr.iterators, it.iterators).toString(), color: { color: '#B660E8', highlight: '#B660E8'} });
-                        multi.set(arr.iterators+","+it.iterators,4);
-                    }
-                }
+                edges.add({id: war_it[i].toString(), from: war_it[i][0].toString(), to: war_it[i][1].toString(), label: get_distance(war_it[i]).toString(), color: { color: '#5889FF', highlight: '#5889FF'}});
+                multi.set(war_it[i].toString(),2);
             }
         }
 
-        /*var elems = elem_map.toArray();
-        var from;
-        var from_reformed;
-        var to;
-        var to_reformed;
-        for (i = 0; i < its.length; i++) {
-            if (max_its == 1) {
-                from = elems[i].indices[0];
-                from_reformed = graph_links.get(from+"");
-                for (j = 0; j < elems[i].to.length; j++) {
-                    to_reformed = graph_links.get(elems[i].to[j][0].indices[0]+"");
-                    edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+"" })
-                    if (multi.get(from_reformed) == null) {
-                        nodes.update({id: from_reformed, color: '#FF7C23'})
-                        multi.set(from_reformed,1);
-                    }
-                    else if (multi.get(from_reformed) == 2) {
-                        nodes.update({id: from_reformed, color: '#B660E8'})
-                        multi.set(from_reformed,3);
-                    }
-                    if (multi.get(to_reformed) == null) {
-                        nodes.update({id: to_reformed, color: '#5889FF'})
-                        multi.set(to_reformed,2);
-                    }
-                    else if (multi.get(to_reformed) == 1) {
-                        nodes.update({id: to_reformed, color: '#B660E8'})
-                        multi.set(to_reformed,3);
-                    }
-
-                }
+        for (i = 0; i < waw_it.length; i ++) {
+            if (multi.get(waw_it[i].toString()) == 1 || multi.get(waw_it[i].toString()) == 2 ) {
+                edges.update({id: waw_it[i].toString(), color: { color: '#B660E8', highlight: '#B660E8'}});
             }
-            else if (dimensions == 2) {
-                from = elems[i].indices;
-                from_reformed = graph_links.get(from[0]+","+from[1]);
-                for (j = 0; j < elems[i].to.length; j++) {
-                    to = elems[i].to[j][0].indices;
-                    to_reformed = graph_links.get(to[0]+","+to[1]);
-                    edges.add({from: from_reformed, to: to_reformed, label: elems[i].to[j][1]+""});
-
-                    if (multi.get(from_reformed) == null) {
-                        nodes.update({id: from_reformed, color: '#FF7C23'})
-                        multi.set(from_reformed,1);
-                    }
-                    else if (multi.get(from_reformed) == 2) {
-                        nodes.update({id: from_reformed, color: '#B660E8'})
-                        multi.set(from_reformed,3);
-                    }
-                    if (multi.get(to_reformed) == null) {
-                        nodes.update({id: to_reformed, color: '#5889FF'})
-                        multi.set(to_reformed,2);
-                    }
-                    else if (multi.get(to_reformed) == 1) {
-                        nodes.update({id: to_reformed, color: '#B660E8'})
-                        multi.set(to_reformed,3);
-                    }
-                }
+            else {
+                edges.add({id: waw_it[i].toString(), from: waw_it[i][0].toString(), to: waw_it[i][1].toString(), label: get_distance(waw_it[i]).toString(), color: { color: 'red', highlight: 'red'}});
             }
-        }*/
+        }
 
         var options = {
         width: width+'px',
         height: height+'px',
         nodes: {
-            font: {face: 'Arvo', color: 'white', size: Math.floor(node_size*0.85)},
+            font: {face: 'Arvo', color: 'white', size: Math.floor(node_size*0.9)},
             color: {
                 background: '#888',
                 highlight: 'blue'
@@ -857,7 +953,7 @@ function to_delta(dep) {
             borderWidth: 0
         },
         edges: {
-            font: {face: 'Arvo', color: '#444', size: Math.floor(node_size*0.85)},
+            font: {face: 'Arvo', color: '#444', size: Math.floor(node_size*0.9)},
             smooth: {
                 type: 'curvedCW',
                 forceDirection: 'none'
@@ -887,164 +983,55 @@ function to_delta(dep) {
         scale: 1,
         })
 
-        //console.log(nodes);
-        /*console.log(elem_map);
-        console.log(min_dimension);
-        console.log(max_dimension);
-        console.log(direction);
-        console.log(dimensions);*/
         document.getElementById('labels_itspc').style.display = 'inline-block';
         document.getElementById('labels_dpgph').style.display = 'none';
         //document.getElementById('direction_vector').innerHTML = "["+direction+"]";
+        add_to_console("Done",'green');
     }
 
     else if (option == 2) {
-
-        /*function set_or_add(a, a2, b, b2, type) {
-            var dist = [];
-
-            for (var i = 0; i < a2.indices.length; i ++) {
-                dist[i] = b2.indices[i] - a2.indices[i];
-            }
-
-            if (stmt_deps.has(a.nr+","+b.nr)) {
-                var arr = stmt_deps.get(a.nr+","+b.nr);
-                arr.push([a,b,type,dist]);
-            }
-            else {
-                var arr = new Array();
-                arr.push([a,b,type,dist]);
-                stmt_deps.set(a.nr+","+b.nr,arr);
-            }
-        }
-
-        for (i = 1; i < statements.length; i++) {
-            for (j = 0; j < i; j++) {
-                for (k = 0; k < statements[i].reads.length; k++) { // raw
-                    for (h = 0; h < statements[j].writes.length; h++) {
-                        if (statements[i].reads[k].key == statements[j].writes[h].key) set_or_add(statements[j],statements[j].writes[h],statements[i],statements[i].reads[k],"raw");
-                    }
-                }
-                for (k = 0; k < statements[i].writes.length; k++) {
-                    for (h = 0; h < statements[j].reads.length; h++) { // war
-                        if (statements[i].writes[k].key == statements[j].reads[h].key) set_or_add(statements[j],statements[j].reads[h].key,statements[i],statements[i].writes[k].key,"war");
-                    }
-                    for (h = 0; h < statements[j].writes.length; h++) { // waw
-                        if (statements[i].writes[k].key == statements[j].writes[h].key) set_or_add(statements[j],statements[j].writes[h].key,statements[i],statements[i].writes[k].key,"waw");
-                    }
-                }
-            }
-        }*/
-
-       for (i = 0; i < statements.length; i++) {
-           for (j = 0; j < statements[i].reads.length; j++) {
-                if (stmt_reads.has(statements[i].reads[j].key)) { 
-                    var arr = stmt_reads.get(statements[i].reads[j].key);
-                }
-                else {
-                    var arr = new Array();
-                    stmt_reads.set(statements[i].reads[j].key,arr);
-                }
-                if (stmt_writes.has(statements[i].reads[j].key)) { // Read after Write
-                    make_deps([statements[i].nr,statements[i].iterators], stmt_writes.get(statements[i].reads[j].key), 'raw');
-                }
-                arr.push([statements[i].nr,statements[i].iterators]);
-           }
-           for (j = 0; j < statements[i].writes.length; j++) {
-                if (stmt_reads.has(statements[i].writes[j].key)) { // Write after Read
-                    make_deps([statements[i].nr,statements[i].iterators], stmt_reads.get(statements[i].writes[j].key), 'war');
-                }
-                if (stmt_writes.has(statements[i].writes[j].key)) { // Write after Write
-                    make_deps([statements[i].nr,statements[i].iterators], stmt_writes.get(statements[i].writes[j].key), 'waw');
-                }
-                stmt_writes.set(statements[i].writes[j].key,[statements[i].nr,statements[i].iterators]);
-           }
-       }
-
-       function make_deps(stmt, arr, which) {
-            if (which == 'war') {
-                for (var i = 0; i < arr.length; i++) {
-                    if (deps.has(stmt[0]+","+arr[i][0])) {
-                        var dep = deps.get(stmt[0]+","+arr[i][0]);
-                    }
-                    else {
-                        var dep = new Array()
-                    }
-                    deps.set(stmt[0]+","+arr[i][0],dep);
-                    var dir = get_direction(get_distance(stmt[1],arr[i][1]));
-                    if (!check_dep([dir,'war',stmt[0],arr[i][0]],dep)) {
-                        dep.push([dir,'war',stmt[0],arr[i][0]]);
-                    }
-                }
-            }
-            else {
-                if (deps.has(arr[0]+","+stmt[0])) {
-                    var dep = deps.get(arr[0]+","+stmt[0]);
-                }
-                else {
-                    var dep = new Array();
-                    deps.set(arr[0]+","+stmt[0],dep);
-                }
-                var dir = get_direction(get_distance(arr[1],stmt[1]));
-                if (!check_dep([dir,which,arr[0],stmt[0]],dep)) {
-                    dep.push([dir,which,arr[0],stmt[0]]);
-                }
-            }
-       }
-
-       function check_dep(d,dep) {
-           for (var i = 0; i < dep.length; i++) {
-               if (d[0].toString() == dep[i][0].toString() && d[1] == dep[i][1]) {
-                   return true;
-               }
-           }
-           return false;
-       }
-
-    var ds = deps.entriesArray();
-
-    for (i = 0; i < ds.length; i++) {
-        for (j = 0; j < ds[i][1].length; j++) {
-            for (k = j+1; k < ds[i][1].length; k++) {
-                if ( ds[i][1][j][1] == ds[i][1][k][1] ) {
-                    for (h = 0; h < ds[i][1][j][0].length; h++) {
-                        if ( ds[i][1][j][0][h] != ds[i][1][k][0][h] ) { ds[i][1][j][0][h] = '*'; }
-                    }
-                }
-            }
-        }
-        var arr = new Array();
-        var raw = 0;
-        var war = 0;
-        var waw = 0;
-        for (j = 0; j < ds[i][1].length; j++) {
-            if (ds[i][1][j][1] == 'raw' && raw == 0) {
-                arr.push(ds[i][1][j]);
-                raw = 1;
-            }
-            if (ds[i][1][j][1] == 'war' && war == 0) {
-                arr.push(ds[i][1][j]);
-                war = 1;
-            }
-            if (ds[i][1][j][1] == 'waw' && waw == 0) {
-                arr.push(ds[i][1][j]);
-                waw = 1;
-            }
-        }
-        ds[i][1] = arr;
-    }
-
+        add_to_console("Building dependency graph...");
     for (i = 1; i <= ast.stmt_nr; i++) {
         nodes.add({id: i, label: "S"+i.toString()});
     }
 
-    for (i = 0; i < ds.length; i++) {
-        var delta = "";
-        for (j = 0; j < ds[i][1].length; j++) {
-            delta = delta + to_delta(ds[i][1][j]) + ",";
+    for (i = 0; i < raw.length; i++) {
+        if (edges_added.has(raw[i][0]+","+raw[i][1])) {
+            var new_delta = edges_added.get(raw[i][0]+","+raw[i][1])+","+get_delta(raw[i][2],'raw');
+            edges.update({id: raw[i][0]+","+raw[i][1], from: raw[i][0], to: raw[i][1], label: new_delta});
+            edges_added.set(raw[i][0]+","+raw[i][1],new_delta);
         }
-        delta = delta.substr(0,delta.length-1);
-        edges.add({from: ds[i][1][0][2], to: ds[i][1][0][3], label: delta});
+        else {
+            var new_delta = get_delta(raw[i][2],'raw');
+            edges.add({id: raw[i][0]+","+raw[i][1], from: raw[i][0], to: raw[i][1], label: new_delta });
+            edges_added.set(raw[i][0]+","+raw[i][1],new_delta);
+        }
+    }
+
+    for (i = 0; i < war.length; i++) {
+        if (edges_added.has(war[i][0]+","+war[i][1])) {
+            var new_delta = edges_added.get(war[i][0]+","+war[i][1])+","+get_delta(war[i][2],'war');
+            edges.update({id: war[i][0]+","+war[i][1], from: war[i][0], to: war[i][1], label: new_delta});
+            edges_added.set(war[i][0]+","+war[i][1],new_delta);
+        }
+        else {
+            var new_delta = get_delta(war[i][2],'war');
+            edges.add({id: war[i][0]+","+war[i][1], from: war[i][0], to: war[i][1], label: new_delta });
+            edges_added.set(war[i][0]+","+war[i][1],new_delta);
+        }
+    }
+
+    for (i = 0; i < waw.length; i++) {
+        if (edges_added.has(waw[i][0]+","+waw[i][1])) {
+            var new_delta = edges_added.get(waw[i][0]+","+waw[i][1])+","+get_delta(waw[i][2],'waw');
+            edges.add({id: waw[i][0]+","+waw[i][1], from: waw[i][0], to: waw[i][1], label: new_delta});
+            edges_added.set(waw[i][0]+","+waw[i][1],new_delta);
+        }
+        else {
+            var new_delta = get_delta(waw[i][2],'waw');
+            edges.add({id: waw[i][0]+","+waw[i][1], from: waw[i][0], to: waw[i][1], label: new_delta });
+            edges_added.set(waw[i][0]+","+waw[i][1],new_delta);
+        }
     }
 
     var options = {
@@ -1089,6 +1076,7 @@ function to_delta(dep) {
 
         //document.getElementById('labels_dpgph').style.display = 'inline-block';
         document.getElementById('labels_itspc').style.display = 'none';
+        add_to_console("Done",'green');
     }
 
 });

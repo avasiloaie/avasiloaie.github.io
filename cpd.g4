@@ -6,6 +6,7 @@ stmt
   : do_stmt EOL
   | if_stmt EOL
   | assign_stmt EOL
+  | empty_stmt EOL
   ;
 
 
@@ -44,6 +45,12 @@ else_stmt
 assign_stmt
   : array ASSIGN expr
   | varname ASSIGN expr
+  ;
+
+// EMPTY
+
+empty_stmt
+  :
   ;
 
 

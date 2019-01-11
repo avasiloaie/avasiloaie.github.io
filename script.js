@@ -36,6 +36,10 @@ function If_Stmt(expr,if_part,else_if_part,else_part) {
     this.else_part = else_part;
 }
 
+function Empty_Stmt() {
+    this.type = "empty";
+}
+
 function Op(lhs,op,rhs) {
     this.type = "op";
     this.lhs = lhs;
@@ -89,6 +93,10 @@ ASTBuilder.prototype.visitCompileUnit = function(ctx) {
 
 ASTBuilder.prototype.visitStmt = function(ctx) {
     return this.visit(ctx.children[0]);
+}
+
+ASTBuilder.prototype.visitEmpty_stmt = function(ctx) {
+    return new Empty_Stmt();
 }
 
 ASTBuilder.prototype.visitDo_stmt = function(ctx) {
@@ -309,7 +317,6 @@ ASTBuilder.prototype.visitVarname = function(ctx) {
 }
 
 window.parse_routine = function(code){
-    console.log("Parsing input code...");
     cnt = 0;
     var chars = new antlr4.InputStream(code);
     var lexer = new cpdLexer(chars);
@@ -319,5 +326,6 @@ window.parse_routine = function(code){
     var cst = parser.compileUnit();
     var ast = new ASTBuilder().visitCompileUnit(cst);
     ast.stmt_nr = cnt;
+    ast.has_errors = parser._syntaxErrors;
     return ast;
 };

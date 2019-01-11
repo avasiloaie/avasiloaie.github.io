@@ -1,4 +1,4 @@
-// Generated from cpd.g4 by ANTLR 4.7.1
+// Generated from cpd.g4 by ANTLR 4.7.2
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -89,6 +89,15 @@ cpdListener.prototype.enterAssign_stmt = function(ctx) {
 
 // Exit a parse tree produced by cpdParser#assign_stmt.
 cpdListener.prototype.exitAssign_stmt = function(ctx) {
+};
+
+
+// Enter a parse tree produced by cpdParser#empty_stmt.
+cpdListener.prototype.enterEmpty_stmt = function(ctx) {
+};
+
+// Exit a parse tree produced by cpdParser#empty_stmt.
+cpdListener.prototype.exitEmpty_stmt = function(ctx) {
 };
 
 

@@ -1,4 +1,4 @@
-// Generated from cpd.g4 by ANTLR 4.7.1
+// Generated from cpd.g4 by ANTLR 4.7.2
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -62,6 +62,12 @@ cpdVisitor.prototype.visitElse_stmt = function(ctx) {
 
 // Visit a parse tree produced by cpdParser#assign_stmt.
 cpdVisitor.prototype.visitAssign_stmt = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by cpdParser#empty_stmt.
+cpdVisitor.prototype.visitEmpty_stmt = function(ctx) {
   return this.visitChildren(ctx);
 };
 
