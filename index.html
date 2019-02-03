@@ -10,6 +10,10 @@
 <!-- USER INPUT -->
 <link rel="stylesheet" href="lib/codemirror.css">
 <link rel="stylesheet" href="webfont.css">
+<link type="text/css" rel="stylesheet" href="lib/jquery.qtip.min.css" />
+
+<script type="text/javascript" src="lib/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="lib/jquery.qtip.min.js"></script>
 <script src="lib/codemirror.js"></script>
 <script src="collections.min.js"></script>
     
@@ -88,10 +92,10 @@ ENDDO
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
 
 <!-- CHROMA -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<!---<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>-->
 <script>
 
-var colors = new Array(
+/*var colors = new Array(
   //[62,35,255],
   //[60,255,60],
   //[255,35,98],
@@ -112,7 +116,8 @@ var step = 0;
 var colorIndices = [0,1,2,3];
 
 //transition speed
-var gradientSpeed = 0.0003;
+//var gradientSpeed = 0.0003;
+var gradientSpeed = 0;
 
 function updateGradient()
 {
@@ -154,16 +159,23 @@ var color2 = "rgb("+r2+","+g2+","+b2+")";
   }
 }
 
-setInterval(updateGradient,10);
+setInterval(updateGradient,10);*/
 </script>
     
 <style type="text/css">
-    #mynetwork {
+    #is_network {
         width: 100%;
-        height: 604px;
-        border: 2px solid lightgray;
+        height: 532px;
+        /*border: 2px solid lightgray;*/
         display:inline-block;
-        margin:10px 0px 10px 0;
+        /*margin:10px 0px 10px 0;*/
+    }
+    #dg_network {
+        width: 100%;
+        height: 529px;
+        /*border: 2px solid lightgray;*/
+        display:inline-block;
+        /*margin:10px 0px 10px 0;*/
     }
 </style>
     
@@ -186,29 +198,14 @@ setInterval(updateGradient,10);
 </div>
     
 <div id="wrapper">
-    
+<div id="leftside">
 <div id="editor">
     <div id="code"></div>
     <div class="under_code">
     <button id="parse_button" class="my_button"><span class="my_button_icon">~</span><span class="my_button_text">Parse</span></button>
-    <div id="loader" include="form-input-select()">
-        <select id ="option" required>
-          <!--
-            This is how we can do "placeholder" options.
-            note: "required" attribute is on the select
-          -->
-          <option value=""
-                  hidden
-          >Routine</option>
-      
-          <!-- normal options -->
-          <option value="1">Iteration Space</option>
-          <option value="2">Dependency Graph</option>
-        </select>
-    </div>
     <nav id="primary_nav_wrap">
             <ul>
-              <li><a href="#">Load test</a>
+              <li><a href="#"><span class="my_button_icon">&#xe020;</span> Load test</a>
                 <ul>
                   <li><a href="#">Basic</a>
                     <ul>
@@ -235,44 +232,129 @@ setInterval(updateGradient,10);
               </li>
             </ul>
             </nav>
-            
             </div>
-    </div>
         
 </div>
 <div id="visualizer">
+    <div id ="question_vis" class ="question">&#xe03a;</div>
+    <div id="tooltip_vis">
+            <div class="other">Toggle on/off for simulation and select for dependence tests.
+                    <div class="other2">                 
+                    <div style="display:block; margin-bottom:5px; margin-top:12px;"><div style="display:inline-block; margin-left:50px;">Off</div><div style="display:inline-block; margin-left:43px">On</div><div style="display:inline-block; margin-left:47px">Selected</div></div>
+                    <div style="display:block; margin-bottom:5px;"><div style="display:inline-block; text-align:right; width:39px; ">Stmt</div><div class="stmt" style="display:inline-block; margin-left:10px; font-size:14px">S1</div><div class="stmt" style="display:inline-block; background-color:#666; margin-left:40px; font-size:14px">S1</div><div style="display:inline-block; margin-left:38px">none</div></div>
+                    <div style="display:block; margin-bottom:5px;"><div style="display:inline-block; text-align:right; width:39px;">Write</div><div class="vwrite" style="display:inline-block; margin-left:10px; font-size:14px">A(I)</div><div class="vwrite" style="display:inline-block; background-color:blue; margin-left:5px; font-size:14px;">A(I)</div><div class="vwrite" style="display:inline-block; background-color:orange; margin-left:5px; font-size:14px;">A(I)</div></div>      
+                    <div style="display:block; margin-bottom:12px;"><div style="display:inline-block; text-align:right; width:39px;">Read</div><div class="vread" style="display:inline-block; margin-left:10px; font-size:14px">A(I)</div><div class="vread" style="display:inline-block; background-color:red; margin-left:5px; font-size:14px;">A(I)</div><div class="vwrite" style="display:inline-block; background-color:orange; margin-left:5px; font-size:14px;">A(I)</div></div>                     
+                    </div>              
+            They are all toggled <b>on</b> by default.
+            </div>
+    </div>
     <div id="root"></div>
     <div class="under_code_vis" id="vis_under">
     <button id="edit_button" class="my_button"><span class="my_button_icon">*</span><span class="my_button_text">Edit</span></button>
-    </div>
-</div>
-    
-<div id="printer">
-    <div id="options_bar">
-        <button id="is_button" class="button_tab">Iteration Space</button>
-        <button id="dg_button" class="button_tab">Dependency Graph</button>
-    </div>
-    <div id="mynetwork"></div>
-    <div id="labels">
-        <div id="labels_itspc">
-            <div style="display:inline-block; margin-right:10px; font-weight:bold;">Dependencies:</div>
-            <div style="width:20px; height:20px; background-color:#FF7C23; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">RAW</div>
-            <div style="margin-left:15px; width:20px; height:20px; background-color:#5889FF; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">WAR</div>
-            <div style="margin-left:15px; width:20px; height:20px; background-color:red; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">WAW</div>
-            <div style="margin-left:15px; width:20px; height:20px; background-color:#B660E8; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Mixed</div>
-        </div>
-        <div id="labels_dpgph">
-            <div style="display:inline-block; margin-right:10px; font-weight:bold;">Labels:</div>
-            <div style="display: inline-block;">δ</div><div style="display:inline-block; margin-left:5px;">RAW</div>
-            <div style="margin-left:15px; display: inline-block;">δ⁻¹</div><div style="display:inline-block; margin-left:5px;">WAR</div>
-            <div style="margin-left:15px; display: inline-block;">δ⁰</div><div style="display:inline-block; margin-left:5px;">WAW</div>
-        </div>
+    <button id="run_button" class="my_button"><span class="my_button_icon">K</span><span class="my_button_text">Run</span><span class="on_demand">on demand</span></button>
+    <div id="toggle_thing">
+    <span class="toggle_text">or</span>
+    <label class="switch">
+            <input id="auto_run" type="checkbox" checked>
+            <span class="slider round"></span>
+    </label>
+    <span class="toggle_text">Run automatically</span></div>
     </div>
 </div>
 <div id ="console" style="overflow-y: scroll; height:200px;"></div>
-    
-    
 </div>
+    
+<div id="printer">
+    <!--
+    <div id="options_bar">
+        <button id="is_button" class="button_tab">Iteration Space</button>
+        <button id="dg_button" class="button_tab">Dependency Graph</button>
+        <button id="gcd_button" class="button_tab">GCD Test</button>
+    </div>
+    <div id="mynetwork"></div>-->
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'IterationSpace')">Iteration Space</button>
+        <button class="tablinks" onclick="openTab(event, 'DependencyGraph')">Dependency Graph</button>
+        <button class="tablinks" onclick="openTab(event, 'SubscriptTests')">Subscript Tests</button>
+    </div>
+    <div id="IterationSpace" class="tabcontent">
+        <div id="is_network"></div>
+        <div id="is_bottom">
+                <div id="labels">
+                        <div id="labels_itspc">
+                            <div style="display:inline-block; margin-right:10px; font-weight:bold;">Dependencies:</div>
+                            <div style="width:20px; height:20px; background-color:#FF7C23; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">RAW</div>
+                            <div style="margin-left:15px; width:20px; height:20px; background-color:#5889FF; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">WAR</div>
+                            <div style="margin-left:15px; width:20px; height:20px; background-color:red; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">WAW</div>
+                            <div style="margin-left:15px; width:20px; height:20px; background-color:#B660E8; display: inline-block;"></div><div style="display:inline-block; margin-left:5px;">Mixed</div>
+                        </div>
+                    </div>
+    </div>
+    </div>
+    <div id="DependencyGraph" class="tabcontent">
+        <div id="dg_network"></div>
+        <div id="dg_bottom">
+            <div id="labels">
+                <div id="labels_dpgph">
+                        <div style="display:inline-block; margin-right:10px; font-weight:bold;">Dependencies:</div>
+                        <div style="display: inline-block;"><span style="font-size:24px;">δ</span></div><div style="display:inline-block; margin-left:5px;">RAW</div>
+                        <div style="margin-left:15px; display: inline-block;"><span style="font-size:24px;">δ⁻¹</span></div><div style="display:inline-block; margin-left:5px;">WAR</div>
+                        <div style="margin-left:15px; display: inline-block;"><span style="font-size:24px;">δ⁰</span></div><div style="display:inline-block; margin-left:5px;">WAW</div>
+                        <div style="margin-left:15px; display: inline-block;"><span style="font-size:24px;">δᵢ</span></div><div style="display:inline-block; margin-left:8px;">subscript <i><b>i</b></i> denotes level of loop carried dependence</div>
+                    </div>
+            </div>
+    </div>                          
+    </div>
+    <div id="SubscriptTests" class="tabcontent">
+        <div class = "nongraph">
+        <div class = "st_step" id ="st_step_select">
+            <div id ="st_text_select" class="st_text">1. Select array calls for which to analyze subscripts.</div>
+            <button id="st_select" class="st_button">Get subscripts</button>
+            <div id ="arrs"></div>
+        </div>
+        <div class = "st_step" style="display:none;" id ="st_step_part">
+            <div id = "st_text_part" class="st_text">2. Partition and classify the subscripts.</div>
+            <div id="subscripts"></div>
+            <button id="st_partition" class="st_button">Partition</button>
+        </div>
+        <div class = "st_step" style="display:none;" id = "st_step_classify">
+            <div class="st_text">3. Classify the partitions into ZIV, SIV, MIV, or COUPLED.</div>
+            <div id="partitions"></div>
+        </div>
+        </div>
+    </div>   
+</div>
+    
+<script type="text/javascript">
+function openTab(evt, tabname) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabname).style.display = "block";
+  evt.currentTarget.className += " active";
+  if (parsed == true) {
+    run_active();
+  }
+}
+</script>    
+
+
+</div>
+
+
 <div id="footer"></div>
     
 <script type="text/javascript"> 
@@ -298,9 +380,18 @@ var stmts;
 var writes_register = new Map();
 var reads_register = new Map();
 var stmt_register = new Map();
+var writes_enum = new Map();
+var reads_enum = new Map();
 var visualizer = document.getElementById('visualizer');
 var vis_under = document.getElementById('vis_under');
 var too_deep = 0;
+var change = false;
+var parsed = false;
+var wrs = new Map();
+var selection_mode = false;
+var iterators = new Map();
+var reads_selected = new Map();
+var writes_selected = new Map();
 
 // CONSOLE INIT
 function add_to_console(line,color) {
@@ -339,7 +430,13 @@ stmts = 0;
 writes_register = new Map();
 reads_register = new Map();
 stmt_register = new Map();
+writes_enum = new Map();
+reads_enum = new Map();
 too_deep = 0;
+selection_mode = false;
+iterators = new Map();
+reads_selected = new Map();
+writes_selected = new Map();
 
 // PARSE 
 
@@ -347,11 +444,10 @@ add_to_console('Parsing...','#c7c7c7');
 ast = parse_routine(input);
 code_visualizer(ast); // VISUALIZATION
 add_event_listeneners(); // LISTENERS
+parsed = true;
 add_to_console('Parsing done','#c7c7c7');
 
 // PARSE END
-
-
 
 // // FUNCTIONS NEEDED FOR VISUALIZATION
 
@@ -360,32 +456,70 @@ function add_event_listeneners() {
     for (i = 1; i <= vwrites; i++) {
         document.getElementById("vwrite_"+i).addEventListener("click", function() {
             var i = parseInt(this.id.substring(7,this.id.length));
-            if (writes_register.has(i)) {
-                writes_register.delete(i);
-                this.style.background = "rgba(50, 50, 136, 0.6)";
-                console.log("off");
+            if (!selection_mode) { 
+                if (writes_register.has(i)) {
+                    writes_register.delete(i);
+                    this.style.background = "rgba(50, 50, 136, 0.6)";
+                }
+                else {
+                    writes_register.set(i,true);
+                    this.style.background = "blue";
+                }
+                if (document.getElementById("auto_run").checked) {
+                    run_active();
+                }
+                else {
+                    change = true;
+                }
             }
             else {
-                writes_register.set(i,true);
-                this.style.background = "blue";
-                console.log("on");
+                if (writes_selected.has(i)) {
+                    writes_selected.delete(i);
+                    if (writes_register.has(i)) this.style.background = "blue";
+                    else this.style.background = "rgba(50, 50, 136, 0.6)";
+                }
+                else {
+                    writes_selected.set(i,true);
+                    this.style.background = "orange";
+                }
             }
         });
+        writes_register.set(i,true);
+        document.getElementById("vwrite_"+i).style.background = "blue";
     }
     for (i = 1; i <= vreads; i++) {
         document.getElementById("vread_"+i).addEventListener("click", function() {
             var i = parseInt(this.id.substring(6,this.id.length));
-            if (reads_register.has(i)) {
-                reads_register.delete(i);
-                this.style.background = "rgba(180, 37, 37, 0.65)";
-                console.log("off");
+            if (!selection_mode) {
+                if (reads_register.has(i)) {
+                    reads_register.delete(i);
+                    this.style.background = "rgba(180, 37, 37, 0.65)";
+                }
+                else {
+                    reads_register.set(i,true);
+                    this.style.background = "red";
+                }
+                if (document.getElementById("auto_run").checked) {
+                    run_active();
+                }
+                else {
+                    change = true;
+                }
             }
             else {
-                reads_register.set(i,true);
-                this.style.background = "red";
-                console.log("on");
+                if (reads_selected.has(i)) {
+                    reads_selected.delete(i);
+                    if (reads_register.has(i)) this.style.background = "red";
+                    else this.style.background = "rgba(180, 37, 37, 0.65)";
+                }
+                else {
+                    reads_selected.set(i,true);
+                    this.style.background = "orange";
+                }
             }
         });
+        reads_register.set(i,true);
+        document.getElementById("vread_"+i).style.background = "red";
     }
     for (i = 1; i <= stmts; i++) {
         document.getElementById("stmt_"+i).addEventListener("click", function() {
@@ -393,14 +527,20 @@ function add_event_listeneners() {
             if (stmt_register.has(i)) {
                 stmt_register.delete(i);
                 this.style.background = "rgb(167, 165, 165)";
-                console.log("off");
             }
             else {
                 stmt_register.set(i,true);
                 this.style.background = "#666";
-                console.log("on");
+            }
+            if (document.getElementById("auto_run").checked) {
+                run_active();
+            }
+            else {
+                change = true;
             }
         });
+        stmt_register.set(i,true);
+        document.getElementById("stmt_"+i).style.background = "#666";
     }
 }
 
@@ -417,6 +557,7 @@ function code_visualizer (ast) {
 function code_visualizer_stmt (stmt) {
     var s = document.createElement('div');
     if (stmt.type == "do") {
+        iterators.set(stmt.it,true);
         s.appendChild(code_visualizer_do_top(stmt));
         tab ++;
         if (tab == 3) { too_deep = 1; }
@@ -424,6 +565,7 @@ function code_visualizer_stmt (stmt) {
             s.appendChild(code_visualizer_stmt(stmt.stmt_list[i]));
         }
         tab --;
+        iterators.delete(stmt.it);
         s.appendChild(code_visualizer_do_end());
         return s;
     }
@@ -439,7 +581,7 @@ function code_visualizer_stmt (stmt) {
 function code_visualizer_do_top(stmt) {
     var top = document.createElement('div');
     top.id = "line_"+(++line_cnt);
-    var x = document.createTextNode("DO "+stmt.it+" = "+code_visualizer_evaluate(stmt.start)+","+code_visualizer_evaluate(stmt.end));
+    var x = document.createTextNode("DO "+stmt.it+" = "+code_visualizer_evaluate(stmt.start)[0]+","+code_visualizer_evaluate(stmt.end)[0]);
     top.appendChild(x);
     add_tab(top);
     return top;
@@ -454,67 +596,113 @@ function code_visualizer_do_end() {
 }
 
 function code_visualizer_assign(stmt) {
-    return code_visualizer_evaluate(stmt.lhs,'lhs')+" = "+code_visualizer_evaluate(stmt.rhs,'rhs');
+    return code_visualizer_evaluate(stmt.lhs,'lhs')[0]+" = "+code_visualizer_evaluate(stmt.rhs,'rhs')[0];
 }
 
 function code_visualizer_evaluate(expr,side) {
-    if (expr.type == 'op') {
+    if (expr == null) {
+        return [null,1];
+    }
+    else if (expr.type == 'op') {
+        var lhs = code_visualizer_evaluate(expr.lhs,side);
+        var rhs = code_visualizer_evaluate(expr.rhs,side);
         if (expr.lhs == null) {
-            return expr.op+code_visualizer_evaluate(expr.rhs,side);
+            if (expr.op == '-') return ["(-" + rhs[0] + ")",rhs[1]];
+            else return [rhs[0],rhs[1]];
         }
         else {
-            return code_visualizer_evaluate(expr.lhs,side)+" "+expr.op+" "+code_visualizer_evaluate(expr.rhs,side);
+            if (expr.op == '+' || expr.op == '-') {
+                return [lhs[0]+expr.op+rhs[0],2];
+            }
+            else {
+                if (lhs[1] == 2 && rhs[1] == 2) {
+                    return ["(" + lhs[0] + ")" + expr.op + "(" + rhs[0] + ")",1];
+                }
+                else if (lhs[1] == 2 && rhs[1] == 1) {
+                    return ["(" + lhs[0] + ")" + expr.op + rhs[0],1];
+                }
+                else if (lhs[1] == 1 && rhs[1] == 2) {
+                    return [lhs[0] + expr.op + "(" + rhs[0] + ")",1];
+                }
+                return [lhs[0]+expr.op+rhs[0],1];
+            }
         }
-        return e;
     }
     else if (expr.type == 'val') {
-        return expr.val;
+        return [expr.val,1];
     }
     else if (expr.type == 'var') {
-        return expr.variable;
+        return [expr.variable,1];
     }
     else if (expr.type == 'array') {
         var out = "";
+        var c;
         if (side == 'lhs') {
             out += '<span class="vwrite" id="vwrite_'+(++vwrites)+'">';
             expr.write_id = vwrites;
+            expr.iterators_at = iterators.entriesArray();
+            writes_enum.set(vwrites,expr);
         }
         else if (side == 'rhs') {
             out += '<span class="vread" id="vread_'+(++vreads)+'">';
             expr.read_id = vreads;
+            expr.iterators_at = iterators.entriesArray();
+            reads_enum.set(vreads,expr);
         }
         out += expr.id+"(";
+        expr.index_text = new Array();
         for (var i = 0; i < expr.index_list.length; i++) {
-            out += code_visualizer_evaluate_inside(expr.index_list[i]) + ",";
+            c = code_visualizer_evaluate_inside(expr.index_list[i])[0];
+            expr.index_text.push(c);
+            out += c + ",";
         }
-        out = out.substring(0,out.length-1) + ")</span>";
-        return out;
+        out = out.substring(0,out.length-1);
+        return [out+")</span>",1];
     }
 }
 
 function code_visualizer_evaluate_inside(expr) {
-    if (expr.type == 'op') {
+    if (expr == null) {
+        return [null,1];
+    }
+    else if (expr.type == 'op') {
+        var lhs = code_visualizer_evaluate(expr.lhs);
+        var rhs = code_visualizer_evaluate(expr.rhs);
         if (expr.lhs == null) {
-            return expr.op+code_visualizer_evaluate(expr.rhs);
+            if (expr.op == '-') return ["(-" + rhs[0] + ")",rhs[1]];
+            else return [rhs[0],rhs[1]];
         }
         else {
-            return code_visualizer_evaluate(expr.lhs)+expr.op+code_visualizer_evaluate(expr.rhs);
+            if (expr.op == '+' || expr.op == '-') {
+                return [lhs[0]+expr.op+rhs[0],2];
+            }
+            else {
+                if (lhs[1] == 2 && rhs[1] == 2) {
+                    return ["(" + lhs[0] + ")" + expr.op + "(" + rhs[0] + ")",1];
+                }
+                else if (lhs[1] == 2 && rhs[1] == 1) {
+                    return ["(" + lhs[0] + ")" + expr.op + rhs[0],1];
+                }
+                else if (lhs[1] == 1 && rhs[1] == 2) {
+                    return [lhs[0] + expr.op + "(" + rhs[0] + ")" ,1];
+                }
+                return [lhs[0]+expr.op+rhs[0],1];
+            }
         }
-        return e;
     }
     else if (expr.type == 'val') {
-        return expr.val;
+        return [expr.val,1];
     }
     else if (expr.type == 'var') {
-        return expr.variable;
+        return [expr.variable,1];
     }
     else if (expr.type == 'array') {
         var out = expr.id+"(";
         for (var i = 0; i < expr.index_list.length; i++) {
-            out += code_visualizer_evaluate_inside(expr.index_list[i]) + ",";
+            out += code_visualizer_evaluate_inside(expr.index_list[i])[0] + ",";
         }
         out = out.substring(0,out.length-1) + ")";
-        return out;
+        return [out,1];
     }
 }
 
@@ -526,8 +714,8 @@ function code_visualizer_evaluate_inside(expr) {
 
 document.getElementById('editor').style.display = "none";
 visualizer.style.display = "block";
-options_bar.style.display = "inline-block";
-printer.style.marginTop = "-41px";
+run_active();
+//options_bar.style.display = "inline-block";
 
 // CHANGE ENVIRONMENT END
 
@@ -536,8 +724,7 @@ printer.style.marginTop = "-41px";
 document.getElementById("edit_button").addEventListener("click", function(){
     document.getElementById('editor').style.display = "block";
     visualizer.style.display = "none";
-    options_bar.style.display = "none";
-    printer.style.marginTop = "0px";
+    //options_bar.style.display = "none";
 });
 
 
@@ -546,7 +733,7 @@ document.getElementById("edit_button").addEventListener("click", function(){
 // GLOBALS FOR SIMULATION
 
     // SIM
-    var iterators = new Map();
+    iterators = new Map();
     var reads = new Map();
     var writes = new Map();
     var reads_it = new Map();
@@ -583,7 +770,7 @@ document.getElementById("edit_button").addEventListener("click", function(){
     var current_x;
     var current_y;
     var width;
-    var height = 604;
+    var height;
     var node_size;
     var graph_links = new Map();
     var multi = new Map();
@@ -662,8 +849,8 @@ function evaluate(expr) { // A(expr,expr) -> evaluates expr for current iteratio
     }
     else if (type == "array") {
         clean = false;
-        if (stmt_register.length == 0 || stmt_register.has(current_stmt)) {
-        if (reads_register.length + writes_register.length == 0 || reads_register.has(expr.read_id)) {
+        if (stmt_register.has(current_stmt)) {
+        if (reads_register.has(expr.read_id)) {
             simulate_array(expr);
         } }
         return 0;
@@ -681,8 +868,8 @@ function evaluate_left(expr) { // A(expr,expr) -> evaluates expr for current ite
     }
     else if (type == "array") {
         clean = false;
-        if (stmt_register.length == 0 || stmt_register.has(current_stmt)) {
-        if (writes_register.length + reads_register.length == 0 || writes_register.has(expr.write_id)) {
+        if (stmt_register.has(current_stmt)) {
+        if (writes_register.has(expr.write_id)) {
             simulate_array(expr);
         } }
         return 0;
@@ -1112,7 +1299,7 @@ function get_delta(dep,type) {
 /// SIMULATION
 
 // ITERATION SPACE
-document.getElementById("is_button").addEventListener("click", function(){
+function make_iteration_space () {
     add_to_console("Running simulation with option: iteration space...",'#c7c7c7');
     option = 1;
 
@@ -1150,6 +1337,7 @@ document.getElementById("is_button").addEventListener("click", function(){
     deepness = 0;
     max_deepness = 0;
     edges_added = new Map();
+    height = 532;
 
     if (too_deep == 1) {
         add_to_console("ERROR [Dimensionality too large]. Use 1D or 2D loops for option: iteration space",'orange');
@@ -1186,7 +1374,7 @@ document.getElementById("is_button").addEventListener("click", function(){
             var edges = new vis.DataSet([]);
 
             // create a network
-            var container = document.getElementById('mynetwork');
+            var container = document.getElementById('is_network');
 
             // provide the data in the vis format
             var data = {
@@ -1301,16 +1489,14 @@ document.getElementById("is_button").addEventListener("click", function(){
             scale: 1,
             })
 
-            document.getElementById('labels_itspc').style.display = 'inline-block';
-            document.getElementById('labels_dpgph').style.display = 'none';
             //document.getElementById('direction_vector').innerHTML = "["+direction+"]";
             add_to_console("Done",'green');
         }
     }
-});
+}
 
 // DEPENDENCY GRAPH
-document.getElementById("dg_button").addEventListener("click", function(){
+function make_dependency_graph() {
     add_to_console("Running simulation with option: depdency graph...",'#c7c7c7');
     option = 2;
 
@@ -1348,6 +1534,7 @@ document.getElementById("dg_button").addEventListener("click", function(){
     var deepness = 0;
     var max_deepness = 0;
     var edges_added = new Map();
+    height = 529;
 
 
     run_simulation(ast);
@@ -1371,7 +1558,7 @@ document.getElementById("dg_button").addEventListener("click", function(){
         var edges = new vis.DataSet([]);
 
         // create a network
-        var container = document.getElementById('mynetwork');
+        var container = document.getElementById('dg_network');
 
         // provide the data in the vis format
         var data = {
@@ -1468,11 +1655,410 @@ document.getElementById("dg_button").addEventListener("click", function(){
 
         network = new vis.Network(container, data, options);
 
-        //document.getElementById('labels_dpgph').style.display = 'inline-block';
-        document.getElementById('labels_itspc').style.display = 'none';
         add_to_console("Done",'green');
     }
+}
+
+// Subscript classes and functions
+
+class Subscript {
+    constructor() {
+        this.elems = new Array();
+        this.vars = new Set();
+    }
+    add(single_sub) {
+        this.elems.push(single_sub);
+        this.vars = this.vars.union(single_sub.vars);
+    }
+    put_index(index) {
+        this.index = index;
+    }
+}
+
+class SingleSub {
+    constructor(expr,str) {
+        this.expr = expr;
+        this.str = str;
+        this.vars = get_vars_in(expr);
+    }
+}
+
+class Partition {
+    constructor(subscript) {
+        this.subscripts = new Array(subscript);
+        this.vars = subscript.vars;
+    }
+    add(partition) {
+        for (var i = 0; i < partition.subscripts.length; i ++) {
+            this.subscripts.push(partition.subscripts[i]);
+        }
+        this.vars = this.vars.union(partition.vars);
+    }
+    classify(its) {
+        if (this.subscripts.length > 1) return "coupled";
+        else {
+            var subscript = this.subscripts[0];
+            var cnt = 0;
+            for (var i = 0; i < its.length; i++) {
+                if (subscript.vars.has(its[i])) cnt ++;
+            }
+            if (cnt == 0) return "ziv";
+            else if (cnt == 1) return "siv";
+            else return "miv";
+        }
+    }
+}
+
+function make_subscripts (list) {
+    var subscripts = new Array();
+    for (var i = 0; i < list[0].index_list.length; i ++) {
+        var subscript = new Subscript();
+        for (var j = 0; j < list.length; j ++) {
+            subscript.add(new SingleSub(list[j].index_list[i],list[j].index_text[i]));
+        }
+        subscript.put_index(i);
+        subscripts.push(subscript);
+    } 
+    return subscripts;
+}
+
+function get_vars_in (expr) {
+    if (expr.type == 'var') {
+        return new Set([expr.variable]);
+    }
+    else if (expr.type == 'op') {
+        if (expr.rhs == null) {
+            return get_vars_in(expr.lhs);
+        }
+        else {
+            return get_vars_in(expr.rhs).union(get_vars_in(expr.lhs));
+        }
+    }
+    return new Set();
+}
+
+function get_selected_arrs() {
+    var i;
+    var arrs = new Array();
+    var wrs = writes_selected.entriesArray();
+    var rds = reads_selected.entriesArray();
+    for (i = 0; i < wrs.length; i ++) {
+        arrs.push(writes_enum.get(wrs[i][0]));
+    }
+    for (i = 0; i < rds.length; i ++) {
+        arrs.push(reads_enum.get(rds[i][0]));
+    }
+    return arrs;
+}
+
+function check_all(arr_list) { // id, dimension, iterators at, and returns iterators
+    if (arr_list.length == 0) return -1;
+    var i;
+    var id = arr_list[0].id;
+    var dimension = arr_list[0].index_list.length;
+    var iterators_at = arr_list[0].iterators_at.toString();
+    for (i = 1; i < arr_list.length; i++) {
+        if (arr_list[i].id != id) return -2;
+        if (arr_list[i].index_list.length != dimension ) return -3;
+        if (arr_list[i].iterators_at.toString() != iterators_at) return -4;
+    }
+    var its = new Array();
+    for (i = 0; i < arr_list[0].iterators_at.length; i++) {
+        its.push(arr_list[0].iterators_at[i][0]);
+    }
+    return its;
+}
+
+function subscript_partition(subscripts,its) {
+    var i, j, k;
+    var partitions = new Array();
+    for (i = 0; i < subscripts.length; i ++) {
+        partitions.push(new Partition(subscripts[i]));
+    }
+    for (i = 0; i < its.length; i ++) {
+        var k = -1;
+        for (j = 0; j < partitions.length; j ++) {
+            if (partitions[j].vars.has(its[i])) {
+                if (k == -1) k = j;
+                else {
+                    partitions[k].add(partitions[j]);
+                    partitions.splice(j,1);
+                }
+            }
+        }
+    }
+    return partitions;
+}
+
+// GLOBALS FOR SUBSCRIPT TESTS
+
+var arrs;
+var its;
+var subscripts;
+var partitions;
+
+document.getElementById("st_select").addEventListener('click', function(event) {
+    var i , j ;
+
+    arrs = get_selected_arrs();
+    its = check_all(arrs);
+    subscripts = make_subscripts(arrs);
+
+    document.getElementById("st_select").style = "display:none;";
+    document.getElementById("st_step_part").style = "display:block";
+    document.getElementById("st_step_select").style = "opacity:0.4";
+
+    var subscripts_div = document.getElementById("subscripts");
+
+    for (i = 0; i < subscripts.length; i ++) {
+        var text_form = "&lt;";
+        for (j = 0; j < subscripts[i].elems.length; j ++) {
+            text_form += subscripts[i].elems[j].str + ",";
+        }
+        text_form = text_form.substring(0,text_form.length-1) + "&gt";
+
+        var subscript = document.createElement('div');
+        subscript.className = "subscript";
+        subscript.innerHTML = '<span class="subscript_nr">'+subscripts[i].index+'</span><span class="actual_subscript">'+text_form+'</span>';
+        subscripts_div.appendChild(subscript);
+    }
+
+    var text = "";
+    for (i = 0; i < arrs.length; i ++) {
+        text += '<span class = "arr">'+arrs[i].id+'[';
+        for (j = 0; j < arrs[i].index_text.length; j ++) {
+            text += arrs[i].index_text[j] + ",";
+        }
+        text = text.substring(0,text.length-1) + ']</span>';
+    }
+
+    document.getElementById("arrs").innerHTML = text;
 });
+
+document.getElementById("st_partition").addEventListener('click', function(event) {
+    document.getElementById("st_partition").style = "display:none";
+    document.getElementById("st_step_classify").style = "display:block";
+    document.getElementById("st_step_part").style = "opacity:0.4";
+    
+    partitions = subscript_partition(subscripts,its);
+
+    var partitions_div = document.getElementById('partitions');
+    for (var i = 0; i < partitions.length; i ++) {
+        text_form = "{";
+        for (var j = 0; j < partitions[i].subscripts.length; j ++) {
+            text_form += '<div class="subscript"><span class="subscript_nr">'+partitions[i].subscripts[j].index+'</span><span class="actual_subscript">';
+            text_form += "&lt;";
+            for (var k = 0; k < partitions[i].subscripts[j].elems.length; k ++) {
+                text_form += partitions[i].subscripts[j].elems[k].str + ",";
+            }
+            text_form = text_form.substring(0,text_form.length-1) + "&gt";
+            text_form += '</span></div>,';
+        }
+        text_form = text_form.substring(0,text_form.length-1) + "}";
+        var partition = document.createElement('div');
+        partition.className = "partition";
+        partition.innerHTML = '<div class="actual_partition">'+text_form+'</div><div class="classification">'+partitions[i].classify(its)+'</div>';
+        partitions_div.appendChild(partition);
+    }
+});
+
+// Subscript end
+
+
+
+// GCD Globals
+
+function gcd (a, b) {
+    if ( ! b) {
+        return a;
+    }
+
+    return gcd(b, a % b);
+}
+
+function gcd_test(x,y) {
+    var X;
+    var Y;
+    if (x.id != y.id) {
+        document.getElementById("gcd_status").innerHTML = "The arrays of the calls do not match. There are is no dependency.";
+    }
+    else if (x.index_list.length != y.index_list.length) {
+        document.getElementById("gcd_status").innerHTML = "The dimensions of the arrays called do not match !?";
+    }
+    else {
+        for (var i = 0; i < x.index_list.length; i ++) {
+            X = gcd_extract(x.index_list[i]);
+            Y = gcd_extract(y.index_list[i]);
+            console.log(X+"..."+Y);
+            var divider = gcd(X[1],Y[1]);
+            var divided = Y[2]-X[2];
+            console.log(divider,divided);
+            var res = divided%divider;
+            console.log(res);
+            if (divider == 1) {
+                document.getElementById("gcd_status").innerHTML = "GCD is 1 which divides everything.";
+            }
+            else {
+                if (res == 0) {
+                    document.getElementById("gcd_status").innerHTML = "The GCD is "+divider+", which divides "+divided+" => there is a dependency.";
+                }
+                else {
+                    document.getElementById("gcd_status").innerHTML = "The GCD is "+divider+", which does not divide "+divided+" => there is no dependency.";
+                }
+            }
+        }
+    }
+}
+
+function gcd_extract(x) { // returns [x,2,-3] for A[2*x-3]
+    var type = x.type;
+    var op = x.op;
+    var lhs = x.lhs;
+    var rhs = x.rhs;
+
+    if (type == 'val') {
+        return [null,1,x.val];
+    }
+    else if (type == 'var') {
+        return [x.variable,1,0];
+    }
+    else if (type == 'op')
+    {   
+        if (lhs == null) {
+            var crhs = gcd_extract(rhs);
+            if (op == '-') return [crhs[0],-crhs[1],-chrs[2]];
+            else if (op == '+') return crhs;
+        }
+        else {
+            var clhs = gcd_extract(lhs);
+            var crhs = gcd_extract(rhs);
+            if (clhs[0] == crhs[0]) {
+                if (clhs[0] == null) {
+                    if (op == '+') return [null,1,clhs[2]+crhs[2]];
+                    else if (op == '-') return [null,1,clhs[2]-crhs[2]];
+                    else if (op == '*') return [null,1,clhs[2]*crhs[2]];
+                    else if (op == '/') return [null,1,clhs[2]/crhs[2]];
+                }
+                else {
+                    if (op == '+') return [clhs[0],clhs[1]+crhs[1],clhs[2]+crhs[2]];
+                    else if (op == '-') return [clhs[0],clhs[1]-crhs[2],clhs[2]-crhs[2]];
+                }
+            }
+            else if (clhs[0] != null && crhs[0] == null) {
+                if (op == '+') return [clhs[0],clhs[1],clhs[2]+crhs[2]];
+                else if (op == '-') return [clhs[0],clhs[1],clhs[2]-crhs[2]];
+                else if (op == '*') return [clhs[0],clhs[1]*crhs[2],clhs[2]*crhs[2]];
+                else if (op == '/') return [clhs[0],clhs[1]/crhs[2],clhs[2]/crhs[2]];
+            }
+            else if (clhs[0] == null && crhs[0] != null) {
+                if (op == '+') return [crhs[0],crhs[1],clhs[2]+crhs[2]];
+                else if (op == '-') return [crhs[0],-crhs[1],clhs[2]-crhs[2]];
+                else if (op == '*') return [crhs[0],clhs[2]*crhs[1],clhs[2]*crhs[2]];
+            }
+        }
+    }
+}
+
+function run_active() {
+    var i, j, tabcontent;
+
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        if (tabcontent[i].style.display == "block") {
+            if (i == 0) {
+                var arr = writes_selected.entriesArray();
+                for (j = 0; j < arr.length; j++) {
+                    document.getElementById("vwrite_"+arr[j][0]).click();
+                }
+                arr = reads_selected.entriesArray();
+                for (j = 0; j < arr.length; j++) {
+                    document.getElementById("vread_"+arr[j][0]).click();
+                }
+                make_iteration_space();
+                selection_mode = false;
+            }
+            else if (i == 1) {
+                var arr = writes_selected.entriesArray();
+                for (j = 0; j < arr.length; j++) {
+                    document.getElementById("vwrite_"+arr[j][0]).click();
+                }
+                arr = reads_selected.entriesArray();
+                for (j = 0; j < arr.length; j++) {
+                    document.getElementById("vread_"+arr[j][0]).click();
+                }
+                make_dependency_graph();
+                selection_mode = false;
+                wrs = new Map();
+            }
+            else if (i == 2) {
+                selection_mode = true;
+            }
+        }
+    }
+    change = false;
+}
+
+document.getElementById("run_button").addEventListener('click', function(event) {
+    run_active();
+});
+
+/*document.getElementById("gcd_button").addEventListener('click', function(event) {
+    var x;
+    var y;
+    if (wrs.length != 2) {
+        document.getElementById("sub_status").innerHTML = "Have two calls selected to run the GCD Test.";
+    }
+    else {
+        var x_type = wrs.get(1).substring(0,1);
+        var y_type = wrs.get(2).substring(0,1);
+        if (x_type == 'r' && y_type == 'r') {
+            document.getElementById("gcd_status").innerHTML = "The selected calls are both reads. There cannot be a dependency between 2 reads.";
+        }
+        else {
+            var x_no = parseInt(wrs.get(1).substring(1,wrs.get(1).length));
+            var y_no = parseInt(wrs.get(2).substring(1,wrs.get(2).length));
+            if (x_type == 'w') x = writes_enum.get(x_no);
+            else if (x_type == 'r') x = reads_enum.get(x_no);
+            if (y_type == 'w') y = writes_enum.get(y_no);
+            else if (y_type == 'r') y = reads_enum.get(y_no);
+            gcd_test(x,y);
+        }
+    }
+});*/
+
+$('#run_button').qtip({
+    content: {
+        text: 'Runs the type of analysis selected on the right hand side'
+    }
+});
+$('#toggle_thing').qtip({
+    content: {
+        text: 'Toggle on/off: runs whenever there is a change in the selection of statements/writes/reads. <br><br>Consider turning off when writing programs with more than 2 nested loops'
+    }
+});
+
+/*$('#question_vis').qtip({
+    content: {
+        text: $(this).next('.tooltip_vis')
+    }
+});*/
+
+// Create the tooltips only when document ready
+$(document).ready(function()
+ {
+     // MAKE SURE YOUR SELECTOR MATCHES SOMETHING IN YOUR HTML!!!
+     $('#question_vis').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tooltip_vis')
+             },
+             style: { classes: 'qtip-bootstrap' }
+         });
+     });
+ });
+
+
+
 
     
 </script>

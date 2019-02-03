@@ -238,6 +238,8 @@ ASTBuilder.prototype.visitExpr = function(ctx) {
         i = i+2;
     }
 
+    console.log('expr',ctx.children.length);
+
     return child;
 }
 
@@ -249,6 +251,8 @@ ASTBuilder.prototype.visitOr_expr = function(ctx) {
         child = new Op(child,ctx.children[i],this.visit(ctx.children[i+1]));
         i = i+2;
     }
+
+    console.log('or',ctx.children.length);
 
     return child;
 }
@@ -271,6 +275,9 @@ ASTBuilder.prototype.visitEq_expr = function(ctx) {
         i = i+2;
     }
 
+    console.log('eq',ctx.children.length);
+    console.log(child);
+
     return child;
 }
 
@@ -282,6 +289,8 @@ ASTBuilder.prototype.visitAdd_expr = function(ctx) {
         child = new Op(child,ctx.children[i],this.visit(ctx.children[i+1]));
         i = i+2;
     }
+
+    console.log('add',ctx.children.length);
 
     return child;
 }
@@ -329,3 +338,18 @@ window.parse_routine = function(code){
     ast.has_errors = parser._syntaxErrors;
     return ast;
 };
+
+/*var code = `
+DO I = 1,5
+    A(I) = X+2*I
+ENDDO
+`
+
+cnt = 0;
+var chars = new antlr4.InputStream(code);
+var lexer = new cpdLexer(chars);
+var tokens  = new antlr4.CommonTokenStream(lexer);
+var parser = new cpdParser(tokens);
+parser.buildParseTrees = true;
+var cst = parser.compileUnit();
+var ast = new ASTBuilder().visitCompileUnit(cst);*/
