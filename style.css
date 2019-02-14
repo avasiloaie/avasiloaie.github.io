@@ -514,7 +514,7 @@ input:checked + .slider:before {
 
 .subscript {
   display: inline-block;
-  margin: 0 10px 0px 5px;
+  margin: 0 7px 0px 10px;
   font-weight:700;
 }
 
@@ -568,6 +568,27 @@ input:checked + .slider:before {
 
 .st_button:active {
   background: rgb(20, 136, 97);
+}
+
+.refresh {
+  font-size:20px;
+  font-family: 'Arvo', serif;
+  border: 2px solid #EDEDED;
+  background: rgb(255, 153, 0);
+  padding: 6px 11px;
+  margin-top:10px;
+  color: #F5F5F5;
+  font-weight:700;
+  vertical-align: middle;
+}
+
+.refresh:hover {
+  background: rgb(255, 187, 0);
+  text-decoration: none;
+}
+
+.refresh:active {
+  background: rgb(255, 145, 0);
 }
 
 .classification {
