@@ -16,6 +16,15 @@
 <script type="text/javascript" src="lib/jquery.qtip.min.js"></script>
 <script src="lib/codemirror.js"></script>
 <script src="collections.min.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+      CommonHTML: {
+        scale: 120
+      }
+    });
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML"></script>
     
 <!-- DEPENDENCY ANALYSIS -->
 <script src="bundle.js"></script>
@@ -236,7 +245,7 @@ setInterval(updateGradient,10);*/
         
 </div>
 <div id="visualizer">
-    <div id ="question_vis" class ="question">&#xe03a;</div>
+    <div id ="question_vis"><div class ="question">&#xe03a;</div><div id ="question_down">Labels</div></div>
     <div id="tooltip_vis">
             <div class="other">Toggle on/off for simulation and select for dependence tests.
                     <div class="other2">                 
@@ -245,7 +254,7 @@ setInterval(updateGradient,10);*/
                     <div style="display:block; margin-bottom:5px;"><div style="display:inline-block; text-align:right; width:39px;">Write</div><div class="vwrite" style="display:inline-block; margin-left:10px; font-size:14px">A(I)</div><div class="vwrite" style="display:inline-block; background-color:blue; margin-left:5px; font-size:14px;">A(I)</div><div class="vwrite" style="display:inline-block; background-color:orange; margin-left:5px; font-size:14px;">A(I)</div></div>      
                     <div style="display:block; margin-bottom:12px;"><div style="display:inline-block; text-align:right; width:39px;">Read</div><div class="vread" style="display:inline-block; margin-left:10px; font-size:14px">A(I)</div><div class="vread" style="display:inline-block; background-color:red; margin-left:5px; font-size:14px;">A(I)</div><div class="vwrite" style="display:inline-block; background-color:orange; margin-left:5px; font-size:14px;">A(I)</div></div>                     
                     </div>              
-            They are all toggled <b>on</b> by default.
+            They are all toggled <b>ON</b> by default and selection is available when analyzing subscripts.
             </div>
     </div>
     <div id="root"></div>
@@ -273,9 +282,9 @@ setInterval(updateGradient,10);*/
     </div>
     <div id="mynetwork"></div>-->
     <div class="tab">
-        <button class="tablinks" onclick="openTab(event, 'IterationSpace')">Iteration Space</button>
-        <button class="tablinks" onclick="openTab(event, 'DependencyGraph')">Dependency Graph</button>
-        <button class="tablinks" onclick="openTab(event, 'SubscriptTests')">Subscript Tests</button>
+        <button class="tablinks" onclick="openTab(event, 'IterationSpace')"><div class="tab_icon">&#xe05a;</div> Iteration Space</button>
+        <button class="tablinks" onclick="openTab(event, 'DependencyGraph')"><div class="tab_icon">&#xe03e;</div> Dependency Graph</button>
+        <button class="tablinks" onclick="openTab(event, 'SubscriptTests')"><div class="tab_icon">R</div> Subscript Tests</button>
     </div>
     <div id="IterationSpace" class="tabcontent">
         <div id="is_network"></div>
@@ -307,27 +316,73 @@ setInterval(updateGradient,10);*/
     </div>
     <div id="SubscriptTests" class="tabcontent">
         <div class = "nongraph">
+        <div id ="holder3_refresh" style="display:none;"><button id="holder3_actual_refresh"class="refresh"><span class="refresh_icon">Z</span></button></div>
+        <div class="holder" id="holder1"><div class="step_desc">Array calls:</div><div id ="arrs"></div></div>
+        <div class="holder" id="holder2"><div class="step_desc">Subscripts:</div><div id="subscripts"></div></div>
+        <div class="holder" id="holder3"><div class="step_desc">Partitions:</div><div id="partitions"></div></div>
         <div class = "st_step" id ="st_step_select">
-            <div id ="st_text_select" class="st_text">1. Select array calls for which to analyze subscripts.</div>
-            <button id="st_select" class="st_button">Get subscripts</button>
-            <div id ="arrs"></div>
+            <div id ="st_text_select" class="st_text" style="margin-top:0px;">Select 1-2 <div id="vis_select" style="display:inline-block; background-color:blue; color:white; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; padding:2px 5px; margin: 0 5px; text-shadow: #000333 0 1px 0;">WHY?</div> array calls for which to analyze dependence.</div>
+            <button id="st_select" class="st_button" style="margin-top:0px;"><span class="my_button_icon">&#xe043;</span>Continue</button>
         </div>
-        <div class = "st_step" style="display:none;" id ="st_step_part">
-            <div id = "st_text_part" class="st_text">2. Partition and classify the subscripts.</div>
-            <div id="subscripts"></div>
-            <button id="st_partition" class="st_button">Partition</button>
+        <div class = "st_step" style="display:none;" id ="st_step_subscr">
+            <div id = "st_text_subscr" class="st_text">Transform the array calls selected into subscripts. <div id="vis_subscr" style="display:inline-block; background-color:blue; color:white; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; padding:2px 5px; margin: 0 5px; text-shadow: #000333 0 1px 0;"><div class="info_button">&#xe009;</div></div> </div>
+            <button id="st_subscr" class="st_button"><span class="my_button_icon">&#xe043;</span>Get Subscripts</button><button class="refresh"><span class="refresh_icon">Z</span></button>
         </div>
-        <div class = "st_step" style="display:none;" id = "st_step_classify">
-            <div class="st_text">3. Classify the partitions into ZIV, SIV, MIV, or COUPLED.</div>
-            <div id="partitions"></div>
+        <div class = "st_step" style="display:none;" id = "st_step_part">
+            <div id ="st_text_part" class="st_text">Partition the subscripts previously generated. <div id="vis_part" style="display:inline-block; background-color:blue; color:white; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; padding:2px 5px; margin: 0 5px; text-shadow: #000333 0 1px 0;"><div class="info_button">&#xe009;</div></div></div>
+            <button id="st_part" class="st_button"><span class="my_button_icon">&#xe043;</span>Get Partitions</button><button class="refresh"><span class="refresh_icon">Z</span></button>
         </div>
-        <div class= "st_step">
-            <button id="refresh" class="refresh">Refresh</button>
+        <div id = "parttabs" style="display:none;"></div>
         </div>
-        </div>
-    </div>   
+
+        <!---->
+<div id ="tool_select">For the purpose of subscript tests, we need to select either <span style="font-weight: 700; color:blue">1 write</span> (which can potentially write to itself), <span style="font-weight: 700; color:blue">2 writes</span>  (either which can potentially write to both), or <span style="font-weight: 700; color:blue">1 write</span> (which can write after read) and <span style="font-weight: 700; color:red">1 read</span> (which can read after write). Reading alone does not cause dependence, and analyzing more than 2 subscripts is not possible.</div>
+<!--
+<div id ="tool_subscr" style="font-size:14px; display:none;"><div>The term subscript will be used to refer to one of the subscripted positions in a pair of array references. Since dependence tests always consider a pair of array references, we will always use the term subscript to refer to a pair of subscript positions. For example, in the pair of references to array A in the following loop nest,</div>
+<div style="font-family:'Courier New', Courier, monospace;">
+<div style="margin-left:10px; margin-top:10px;">DO i</div>
+<div style="margin-left:20px;">    DO j</div>
+<div style="margin-left:30px;">     DO k</div>
+<div style="margin-left:40px;">      A(i, j) = A(i, k) + C</div>
+<div style="margin-left:30px;">       ENDDO</div>
+<div style="margin-left:20px;">  ENDDO</div>
+<div style="margin-left:10px; margin-bottom:10px;">ENDDO</div>
 </div>
-    
+<div>index i occurs in the first subscript and indexes j and k occur in the second subscript.</div></div>
+
+<div id ="tool_part" style="font-size:14px; display:none;"><div>Separability describes whether a given subscript interacts with other subscripts for the purpose of dependence testing. When testing multidimensional arrays, a subscript position is said to be separable if its indexes do not occur in the other subscripts. If two different subscripts contain the same index, they are coupled. For example, in the loop below,</div>
+<div style="font-family:'Courier New', Courier, monospace;">
+<div style="margin-left:10px; margin-top:10px;">DO i</div>
+<div style="margin-left:20px;">    DO j</div>
+<div style="margin-left:30px;">        DO k</div>
+<div style="margin-left:40px;">            A(i, j, j) = A(i, j, k) + C</div>
+<div style="margin-left:30px;">        ENDDO</div>
+<div style="margin-left:20px;">    ENDDO</div>
+<div style="margin-left:10px; margin-bottom:10px;">ENDDO</div>
+</div>
+<div>the first subscript is separable, but the second and third are coupled because they both contain the index j. ZIV subscripts are vacuously separable because they contain no loop indexes. Partitition the subscripts corresponding to the array calls based on their separability.</div>
+</div>
+
+<div id="tool_ziv" style="font-size:14px; display:none;">A subscript is said to be ZIV (zero index variable) if the subscript position contains no index in either reference.</div>
+<div id="tool_siv" style="font-size:14px; display:none;">A subscript is said to be SIV (single index variable) if only one index occurs in that position.</div>
+<div id="tool_miv" style="font-size:14px; display:none;">Any subscript with more than one index is said to be MIV (multiple index variable).</div>
+<div id="tool_coupled" style="font-size:14px; display:none;">If two different subscripts contain the same index, they are coupled.</div>
+<div id="tool_ivinfo" style="font-size:14px; display:none;"><div>For instance, consider the following loop:</div>
+<div style="font-family:'Courier New', Courier, monospace;">
+<div style="margin-left:10px; margin-top:10px;">DO i</div>
+<div style="margin-left:20px;">    DO j</div>
+<div style="margin-left:30px;">        DO k</div>
+<div style="margin-left:40px;"> A(5, i+1, j) = A(N, i, k) + C</div>
+<div style="margin-left:30px;">   ENDDO</div>
+<div style="margin-left:20px;">    ENDDO</div>
+<div style="margin-left:10px; margin-bottom:10px;">ENDDO</div>
+</div>
+<div>When testing for a true dependence between the two references to A in the sample fragment, the first subscript is ZIV, the second is SIV, and the third is MIV. Remember again the convention that “subscript” in this context means a pair of corresponding subscripts.</div>
+</div>-->
+
+</div>
+</div>
+
 <script type="text/javascript">
 function openTab(evt, tabname) {
   // Declare all variables
@@ -351,6 +406,27 @@ function openTab(evt, tabname) {
   if (parsed == true) {
     run_active();
   }
+}
+
+function openTabPart(evt, tabname) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("parttab");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("parttab_button");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabname).style.display = "block";
+  evt.currentTarget.className += " active";
 }
 </script>    
 
@@ -395,6 +471,8 @@ var selection_mode = false;
 var iterators = new Map();
 var reads_selected = new Map();
 var writes_selected = new Map();
+var itt = 1;
+var iterators_se = new Dict();
 
 // CONSOLE INIT
 function add_to_console(line,color) {
@@ -440,6 +518,8 @@ selection_mode = false;
 iterators = new Map();
 reads_selected = new Map();
 writes_selected = new Map();
+iterators_se = new Dict();
+itt = 1;
 
 // PARSE 
 
@@ -566,7 +646,7 @@ function code_visualizer (ast) {
 function code_visualizer_stmt (stmt) {
     var s = document.createElement('div');
     if (stmt.type == "do") {
-        iterators.set(stmt.it,true);
+        iterators.set(stmt.it,itt++);
         s.appendChild(code_visualizer_do_top(stmt));
         tab ++;
         if (tab == 3) { too_deep = 1; }
@@ -575,6 +655,7 @@ function code_visualizer_stmt (stmt) {
         }
         tab --;
         iterators.delete(stmt.it);
+        itt--;
         s.appendChild(code_visualizer_do_end());
         return s;
     }
@@ -591,6 +672,7 @@ function code_visualizer_do_top(stmt) {
     var top = document.createElement('div');
     top.id = "line_"+(++line_cnt);
     var x = document.createTextNode("DO "+stmt.it+" = "+code_visualizer_evaluate(stmt.start)[0]+","+code_visualizer_evaluate(stmt.end)[0]);
+    iterators_se.set(stmt.it,[stmt.start,stmt.end]);
     top.appendChild(x);
     add_tab(top);
     return top;
@@ -1147,7 +1229,7 @@ function simulate_do(do_stmt) {
     if (iterators.get(it) > evaluate_iterator(do_stmt.end) && too_deep == 0) {
         if (step > 0) { step = -step; }
 
-        while (iterators.get(it) >= evaluate_iterator(do_stmt.end) ) {
+        while (iterators.get(it) > evaluate_iterator(do_stmt.end) ) {
             if (option == 1) {
                 if (deepness == 1) {
                     iterations_1.push(iterators.entriesArray());
@@ -1162,7 +1244,7 @@ function simulate_do(do_stmt) {
         }
     }
     else {
-        while (iterators.get(it) <= evaluate_iterator(do_stmt.end) ) {
+        while (iterators.get(it) < evaluate_iterator(do_stmt.end) ) {
             if (option == 1) {
                 if (deepness == 1) {
                     iterations_1.push(iterators.entriesArray());
@@ -1807,43 +1889,46 @@ var subscripts;
 var partitions;
 var id = 0;
 
-document.getElementById("refresh").addEventListener('click', function(event) {
+var classname = document.getElementsByClassName("refresh");
+
+Array.from(classname).forEach(function(element) {
+      element.addEventListener('click', refresh);
+    });
+
+function refresh() {
+    document.getElementById('arrs').innerHTML = "...";
+    document.getElementById('subscripts').innerHTML = "...";
+    document.getElementById('partitions').innerHTML = "...";
+    document.getElementById("st_step_select").style = "display:block;";
+    document.getElementById('st_step_part').style = "display:none;"
+    document.getElementById('st_step_subscr').style = "display:none;"
+    document.getElementById('holder3').style = "display:inline-block;";
+    document.getElementById('holder3_refresh').style = "display:none;";
+    document.getElementById('parttabs').innerHTML = "";
+    document.getElementById('parttabs').style = "display:none;"
+    id = 0;
+}
+
+/*document.getElementsByClassName("refresh").addEventListener('click', function(event) {
     document.getElementById('arrs').innerHTML = "";
     document.getElementById('subscripts').innerHTML = "";
     document.getElementById('partitions').innerHTML = "";
-    document.getElementById('st_step_select').style = "opacity:1";
-    document.getElementById("st_select").style = "display:block;";
-    document.getElementById("st_partition").style = "display:block;";
-    document.getElementById('st_step_part').style = "display:none; opacity:1";
-    document.getElementById('st_step_classify').style ="display:none; opacity:1";
+    document.getElementById("st_step_select").style = "display:block;";
+    document.getElementById('st_step_part').style = "display:none;"
+    document.getElementById('st_step_subscr').style = "display:none;"
+    document.getElementById('holder3').style = "display:inline-block;";
     id = 0;
-});
+});*/
 
 document.getElementById("st_select").addEventListener('click', function(event) {
     var i , j ;
 
     arrs = get_selected_arrs();
     its = check_all(arrs);
-    subscripts = make_subscripts(arrs);
 
-    document.getElementById("st_select").style = "display:none;";
-    document.getElementById("st_step_part").style = "display:block";
-    document.getElementById("st_step_select").style = "opacity:0.4";
-
-    var subscripts_div = document.getElementById("subscripts");
-
-    for (i = 0; i < subscripts.length; i ++) {
-        var text_form = "&lt;";
-        for (j = 0; j < subscripts[i].elems.length; j ++) {
-            text_form += subscripts[i].elems[j].str + ",";
-        }
-        text_form = text_form.substring(0,text_form.length-1) + "&gt";
-
-        var subscript = document.createElement('div');
-        subscript.className = "subscript";
-        subscript.innerHTML = '<span class="subscript_nr">'+subscripts[i].index+'</span><span class="actual_subscript">'+text_form+'</span>';
-        subscripts_div.appendChild(subscript);
-    }
+    document.getElementById("st_step_subscr").style = "display:block";
+    document.getElementById("st_step_select").style = "display:none;";
+    document.getElementById("holder1").style = "display:inline-block;"
 
     var text = "";
     for (i = 0; i < arrs.length; i ++) {
@@ -1857,20 +1942,51 @@ document.getElementById("st_select").addEventListener('click', function(event) {
     document.getElementById("arrs").innerHTML = text;
 });
 
-document.getElementById("st_partition").addEventListener('click', function(event) {
-    document.getElementById("st_partition").style = "display:none";
-    document.getElementById("st_step_classify").style = "display:block";
-    document.getElementById("st_step_part").style = "opacity:0.4";
+document.getElementById("st_subscr").addEventListener('click', function(event) {
+
+    var i , j ;
+    document.getElementById("st_step_subscr").style = "display:none;";
+    document.getElementById("st_step_part").style = "display:block;"
+    document.getElementById("holder2").style = "display:inline-block;"
     
+
+    subscripts = make_subscripts(arrs);
+    var subscripts_div = document.getElementById("subscripts");
+    subscripts_div.innerHTML = "";
+
+    for (i = 0; i < subscripts.length; i ++) {
+        var text_form = "&lt;";
+        for (j = 0; j < subscripts[i].elems.length; j ++) {
+            text_form += subscripts[i].elems[j].str + ",";
+        }
+        text_form = text_form.substring(0,text_form.length-1) + "&gt";
+
+        var subscript = document.createElement('div');
+        subscript.className = "subscript";
+        subscript.innerHTML = '<span class="actual_subscript">'+text_form+'</span>';
+        //subscript.innerHTML = '<span class="subscript_nr">'+subscripts[i].index+'</span><span class="actual_subscript">'+text_form+'</span>';
+        subscripts_div.appendChild(subscript);
+    }
+});
+
+document.getElementById("st_part").addEventListener('click', function(event) {
+    document.getElementById("st_step_part").style = "display:none";
+    var part_tabs = document.getElementById("parttabs");
+    part_tabs.style="display:block;";
+    document.getElementById("holder3").style = "display:block;"
+    document.getElementById("holder3_refresh").style = "display:inline-block;"
+    var i = 0;
     partitions = subscript_partition(subscripts,its);
 
     var partitions_div = document.getElementById('partitions');
-    for (var i = 0; i < partitions.length; i ++) {
+    partitions_div.innerHTML = "";
+    for (i = 0; i < partitions.length; i ++) {
         text_form = "{";
+        var forms = new Array();
         for (var j = 0; j < partitions[i].subscripts.length; j ++) {
-            text_form += '<div class="subscript"><span class="subscript_nr">'+partitions[i].subscripts[j].index+'</span><span class="actual_subscript">';
+            text_form += '<div class="subscript"><span class="actual_subscript">';
+            //text_form += '<div class="subscript"><span class="subscript_nr">'+partitions[i].subscripts[j].index+'</span><span class="actual_subscript">';
             text_form += "&lt;";
-            var forms = new Array();
             for (var k = 0; k < partitions[i].subscripts[j].elems.length; k ++) {
                 text_form += partitions[i].subscripts[j].elems[k].str + ",";
                 var arrs = new Array();
@@ -1879,16 +1995,410 @@ document.getElementById("st_partition").addEventListener('click', function(event
             text_form = text_form.substring(0,text_form.length-1) + "&gt";
             text_form += '</span></div>,';
         }
+        partitions[i].forms = forms;
         text_form = text_form.substring(0,text_form.length-1) + "}";
         var partition = document.createElement('div');
         partition.className = "partition";
-        partition.innerHTML = '<div class="actual_partition">'+text_form+'</div><div class="classification">'+partitions[i].classify(its)+'</div>';
+        partitions[i].index = i;
+        partition.innerHTML = '<button id = "partbutton_'+i+'" class="parttab_button" onclick="openTabPart(event, \'parttab'+i+'\')"><div class="actual_partition">'+text_form+'</div></button>';
+        var tab = document.createElement('div');
+        tab.className = "parttab";
+        tab.id = "parttab"+i;
+        tab.style="display:none;"
+        var classify_div = document.createElement('div');
+        classify_div.id = "classify_div"+i;
+        tab.appendChild(classify_div);
+        classify_div.innerHTML = '<span>Classify partition <span style="font-weight:700; color:red; margin: 0 5px;">'+text_form+'</span> into ZIV<div class="vis_ziv" style="display:inline-block; color:blue; margin:0 3px;"><div class="info_button2">&#xe009;</div></div>, SIV<div class="vis_siv" style="display:inline-block; color:blue; margin: 0 3px;"><div class="info_button2">&#xe009;</div></div>, MIV<div class="vis_miv" style="display:inline-block; color:blue; margin: 0 3px;"><div class="info_button2">&#xe009;</div></div> or COUPLED<div class="vis_coupled" style="display:inline-block; color:blue; margin: 0 3px;"><div class="info_button2">&#xe009;</div></div>.';
+        var continue_div = document.createElement('div');
+        continue_div.id = "continue_div"+i;
+        var continue_div_1 = document.createElement('span');
+        var continue_div_2 = document.createElement('span');
+        continue_div_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"continue_div"+i+"_span\" class=\"cont_1\" onclick=\"classifyThis(event,"+i+")\">Classification:</span>"
+        continue_div_2.innerHTML = "..."
+        tab.appendChild(continue_div);
+        continue_div.appendChild(continue_div_1);
+        continue_div_1.id="continue_div"+i+"_1";
+        continue_div_2.id="continue_div"+i+"_2";
+        continue_div.appendChild(continue_div_2);
+        part_tabs.append(tab);
+
+        //
+
+        $('.vis_ziv').each(function() {
+         $(this).qtip({
+             content: {
+                 text: 'A subscript is said to be ZIV (zero index variable) if the subscript position contains no index in either reference.' },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+     $('.vis_siv').each(function() {
+         $(this).qtip({
+             content: {
+                 text: 'A subscript is said to be SIV (single index variable) if only one index occurs in that position.'},
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+     $('.vis_miv').each(function() {
+         $(this).qtip({
+             content: {
+                 text: 'Any subscript with more than one index is said to be MIV (multiple index variable).'},
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+     $('.vis_coupled').each(function() {
+         $(this).qtip({
+             content: {
+                text: 'If two different subscripts contain the same index, they are coupled.'},
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+
+        //
+
+
+
+        /*partition.innerHTML = '<div class="actual_partition">'+text_form+'</div><div class="classification">'+partitions[i].classify(its)+'</div>';
         if (partitions[i].classify(its) == 'siv') {
-            partition.innerHTML += '<div class="classification">'+siv_form(forms)+'</div>';
-        }
+            var form = siv_form(forms);
+            if (form[0] == 'strong') {
+                strong_siv(form);
+            }
+            //partition.innerHTML += '<div class="classification">'+siv_form(forms)+'</div>';
+        }*/
         partitions_div.appendChild(partition);
     }
+    var part_status = document.createElement('div');
+    part_status.innerHTML = "Tests not done";
+    part_status.id = "part_status";
+    part_status.style = "display:inline-block; margin-left:10px;";
+    partitions_div.appendChild(part_status);
 });
+
+function classifyThis(event, i) {
+    var p = partitions[i];
+    var classification = p.classify(its);
+    var continue_div_2 = document.getElementById("continue_div"+i+"_2");
+    var continue_div_1 = document.getElementById("continue_div"+i+"_1");
+    continue_div_2.innerHTML = classification;
+    continue_div_2.style="font-size:20px; text-transform:uppercase; font-weight:700; color:red;"
+    continue_div_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"continue_div"+i+"_span\" class=\"cont_1_clicked\">Classification:</span>"
+    var class_div = document.createElement('div');
+    class_div.id="class_div"+i;
+    if (classification == 'siv') {
+        var determine_div = document.createElement("div");
+        class_div.appendChild(determine_div);
+        determine_div.innerHTML = "<div>Determine the type of the SIV based on its form: STRONG*, WEAK*, WEAK-ZERO*, WEAK-CROSSING*.</div>"
+        determine_div.id = "determine_div"+i;
+        determine_div.style="margin-top:10px;";
+        var determine_div_1 = document.createElement('span');
+        var determine_div_2 = document.createElement('span');
+        determine_div_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"determine_div"+i+"_span\" class=\"cont_1\" onclick=\"sivTypeThis(event,"+i+")\">SIV Type:</span>";
+        determine_div_2.innerHTML = "...";
+        determine_div_1.id="determine_div"+i+"_1";
+        determine_div_2.id="determine_div"+i+"_2";
+        determine_div.appendChild(determine_div_1);
+        determine_div.appendChild(determine_div_2);
+    }
+    var tab = document.getElementById("parttab"+i);
+    tab.appendChild(class_div);
+}
+
+function sivTypeThis(event, i) {
+    var forms = partitions[i].forms;
+    var type = siv_form(forms);
+    console.log(forms);
+    //console.log(type);
+    var determine_div = document.getElementById("determine_div"+i);
+    var determine_div_2 = document.getElementById("determine_div"+i+"_2");
+    determine_div_2.innerHTML=type[0];
+    determine_div_2.style="font-size:18px; text-transform:uppercase; font-weight:700; color:red;"
+    var determine_div_1 = document.getElementById("determine_div"+i+"_1");
+    determine_div_1.innerHTML =  "<div class=\"continue_icon\">j</div> <span id=\"determine_div"+i+"_span\" class=\"cont_1_clicked\">SIV Type:</span>";
+    var tab = document.getElementById("parttab"+i);
+    if (type[0] == 'strong') {
+        var show_form = document.createElement('div');
+        show_form.innerHTML = "The generic form of a STRONG SIV is: <p><$a*i+c_1,a*i+c_2$>, where $i$ - loop index, $a$ - index coefficient, $c_1$ and $c_2$ - constants.</p>";
+        show_form.style = "margin-top:10px;"
+        var our_values = document.createElement('div');
+        our_values.innerHTML = "In this partition: index $i = "+type[1]+"$, coefficient $a = "+display_form(type[2],false)+"$ and constants $c_1 = "+display_form(type[3],false)+"$ , $c_2 = "+display_form(type[4],false)+"$.";
+        our_values.style="margin-top:10px";
+        tab.appendChild(show_form);
+        tab.appendChild(our_values);
+        var show_dist = document.createElement('div');
+        show_dist.innerHTML = "We are interested in calculating the dependence distance: $d = \\frac{c_1 - c_2}{a}$. A dependence exists between two references only if access to common elements occurs within the bounds set by the loop (given SIV, there must be only one loop involved in the two references). This access will occur only when $d$ is an integer and $|d| \\lt U - L$, where $U$ and $L$ are the loop upper and lower bounds.";
+        show_dist.style="margin-top:10px;"
+        var pen_step = document.createElement('div');
+        pen_step.style="margin-top:10px;"
+        pen_step.innerHTML = "Calculate $d$ ; if it is an integer and its absolute value falls within the range of the loop, there exists a dependence whose direction can be determined by the sign of $d$. Otherwise, no dependence exists.";
+        var last_step = document.createElement('div');
+        var last_step_1 = document.createElement('span');
+        var last_step_2 = document.createElement('span');
+        last_step_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"calculate_div_"+i+"_span\" class=\"cont_1\" onclick=\"strongSivThis(event,"+i+")\">Dependence:</span>";
+        last_step_2.innerHTML = "...";
+        last_step_1.id = "calculate_div_"+i;
+        last_step_2.id = "calculate_div_"+i+"_2";
+        last_step.appendChild(last_step_1);
+        last_step.appendChild(last_step_2);
+        last_step.style="margin-top:10px;"
+        tab.appendChild(show_dist);
+        tab.appendChild(pen_step);
+        tab.appendChild(last_step);
+    }
+    else if (type[0] == 'weak') {
+        var show_form = document.createElement('div');
+        show_form.innerHTML = "The generic form of a WEAK SIV is: <p><$a_1*i+c_1,a_2*i+c_2$>, where $i$ - loop index, $a_1$ and $a_2$ - index coefficients, $c_1$ and $c_2$ - constants.</p>";
+        show_form.style = "margin-top:10px;"
+        var our_values = document.createElement('div');
+        our_values.innerHTML = "In this partition: index $i = "+type[1]+"$, coefficient $a_1 = "+display_form(type[2],false)+"$, coefficient $a_2 = "+display_form(type[3],false)+"$ and constants $c_1 = "+display_form(type[4],false)+"$ , $c_2 = "+display_form(type[5],false)+"$.";
+        our_values.style="margin-top:10px";
+        var about_gcd = document.createElement('div');
+        about_gcd.style="margin-top:10px;";
+        about_gcd.innerHTML = "A subscript of this form can be tested exactly by constructing all solutions of the linear diophantine equation: $a_1*x – b_1*y = b_0 – a_0$ , This equation system has a solution if and only if the greatest common denominator of $a_1$ and $b_1$ divides $b_0 – a_0$.";
+        tab.appendChild(show_form);
+        tab.appendChild(our_values);
+        tab.appendChild(about_gcd);
+        var last_step = document.createElement('div');
+        var last_step_1 = document.createElement('span');
+        var last_step_2 = document.createElement('span');
+        last_step_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"calculate_div_"+i+"_span\" class=\"cont_1\" onclick=\"weakSivThis(event,"+i+")\">Dependence:</span>";
+        last_step_2.innerHTML = "...";
+        last_step_1.id = "calculate_div_"+i;
+        last_step_2.id = "calculate_div_"+i+"_2";
+        last_step.appendChild(last_step_1);
+        last_step.appendChild(last_step_2);
+        last_step.style="margin-top:10px;"
+        tab.appendChild(last_step);
+    }
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    console.log(type);
+    /*var form_div = document.createElement("div");
+    form_div.innerHTML = "<span>Form:</span><span>"+display_form(forms[0])+" , "+display_form(forms[1])+"</span>";
+    determine_div.appendChild(form_div);*/
+    /////////////////////////////// FORM FIRST THEN TYPE
+}
+
+function weakSivThis(event, i) {
+    var response = 'Cannot determine';
+    var forms = partitions[i].forms;
+    var partbutton = document.getElementById("partbutton_"+i);
+    var tab = document.getElementById("parttab"+i);
+    var type = siv_form(forms);
+    var gcd_result = gcd_test(type[2],type[3],type[4],type[5]);
+    console.log(gcd_result);
+    if (gcd_result[2] == null) {
+        response = 'Cannot determine whether dependency exists, unknown vars'; // show which vars and the equation we have
+    }
+    else if (gcd_result[2] == 1) {
+        response = 'Divider is 1 which can divide everything. Cannot determine'; // explain why show eq
+    }
+    else if (gcd_result[0] == null) {
+        response = 'Cannot determine whether dependency exists, unknown vars'; // show vars eq
+    }
+    else if (gcd_result[0] == 0) {
+        response = "There is a dependency"; // show gcd result
+    }
+    else {
+        response = "There is no dependency"; // show gcd result 
+    }
+
+    var last_step_1 = document.getElementById("calculate_div_"+i);
+    var last_step_2 = document.getElementById("calculate_div_"+i+"_2");
+    last_step_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"calculate_div_"+i+"_span\" class=\"cont_1_clicked\">Dependence:</span>";
+    last_step_2.innerHTML = response;
+}
+
+function strongSivThis(event, I) {
+    var i, j;
+    var forms = partitions[I].forms;
+    var partbutton = document.getElementById("partbutton_"+I);
+    //document.getElementById("partbutton_"+I).classList.add('parttab_button_orange');
+    //document.getElementById("partbutton_"+I).classList.remove('parttab_button');
+    var type = siv_form(forms);
+    var not_supported = false;
+    var tab = document.getElementById("parttab"+I);
+    var eq1 = document.createElement("div");
+    var invar = new Map();
+    eq1.style="margin-top:10px;";
+    var reverse = get_form_mult(type[4],new Array(new Value(-1)));
+    disp_type_1 = display_form(type[3],false);
+    disp_type_2 = display_form(reverse,false);
+    disp_type_3 = display_form(type[2],false);
+    disp_type_4 = display_form(get_form_add(type[3],get_form_mult(type[4],new Array(new Value(-1)))),false);
+    var strong_calc = strong_siv(type);
+    tab.appendChild(eq1);
+    eq1.innerHTML = "$d = \\frac{"+disp_type_1+(disp_type_2[0] != '-' ? '+'+disp_type_2 : disp_type_2)+"}{"+disp_type_3+"} = "+display_form(strong_calc[0],false)+"$ <span style=\"margin-left:25px\"></span> $L = "+display_form(strong_calc[2],false)+"$ <span style=\"margin-left:25px\"></span> $U = "+display_form(strong_calc[3],false)+"$ <span style=\"margin-left:25px\"></span>(of loop index $"+type[1]+"$)";
+    var has_float = false;
+    var the_float = null;
+    var the_float_2 = null;
+    var response = '<span style="font-weight:700; color:orange;">Cannot</span> determine';
+    for (i = 0; i < strong_calc[0].length; i++) {
+        if (strong_calc[0][i].type == 'val') {
+            if (!Number.isInteger(strong_calc[0][i].value)) {
+                the_float = i;
+                the_float_2 = strong_calc[0][i].value+"";
+                has_float = true;
+            }
+        }
+    }
+    for (i = 0; i < strong_calc[0].length; i ++) {
+        if ( strong_calc[0][i].divided != null ) {
+            not_supported = true;
+            invar.set(strong_calc[0][i].divided.variable,true);
+        }
+        if ( strong_calc[0][i].type == 'var' ) { invar.set(strong_calc[0][i].variable); not_supported = true; }
+        else if (strong_calc[0][i].type == 'var') {
+            for (j = 0; j < strong_calc[0][i].elems.length; j ++) {
+                if ( strong_calc[0][i].elems[j].divided != null ) {
+                    not_supported = true;
+                    invar.set(strong_calc[0][i].elems[j].divided.variable,true);
+                }
+                if ( strong_calc[0][i].elems[j].type == 'var' ) { invar.set(strong_calc[0][i].variable); not_supported = true; }
+            }
+        }
+    }
+    var invar_re = "";
+    for (i = 0; i < invar.entriesArray().length; i++) {
+        invar_re += invar.entriesArray()[i][0] + " , ";
+    }
+    if (invar.entriesArray().length > 0) invar_re = invar_re.substring(0,invar_re.length-3);
+
+    if (not_supported) {
+        document.getElementById("partbutton_"+I).classList.add('parttab_button_orange');
+        // show stuff without doing weird
+        eq1.innerHTML = "$d = \\frac{"+disp_type_4+"}{"+disp_type_3+"}$ <span style=\"margin-left:25px\"></span> $L = "+display_form(strong_calc[2],false)+"$ <span style=\"margin-left:25px\"></span> $U = "+display_form(strong_calc[3],false)+"$ <span style=\"margin-left:25px\"></span>(of loop index $"+type[1]+"$)";
+        var eq2 = document.createElement('div');
+        eq2.style="margin-top:10px;"
+        eq2.innerHTML = "Whether a could dependency exist depends on the loop invariant variables: $"+ invar_re +"$ in $|d| \\lt "+ display_form(strong_calc[3],false) + " " + display_form(get_form_mult(strong_calc[2],new Array(new Value(-1))),false)+"$ <span style=\"margin-left:10px\"></span> $\\equiv$ <span style=\"margin-left:10px\"></span> $|d| \\lt "+display_form(strong_calc[1],false)+"$";
+        tab.appendChild(eq2);
+    }
+    else if (has_float) {
+        eq1.innerHTML =  "$d = \\frac{"+disp_type_1+(disp_type_2[0] != '-' ? '+'+disp_type_2 : disp_type_2)+"}{"+disp_type_3+"} = "+display_form(strong_calc[0],false)+"$ <span style=\"margin-left:5px\"></span>";
+        if (strong_calc[0].length == 1) {
+           eq1.innerHTML += "is not an integer, therefore references to the same element cannot occur on a loop iteration for both subscripts -> no dependency.";
+           response = 'Partition yields <span style="font-weight:700; color:green;">independence</span>';
+           document.getElementById("partbutton_"+I).classList.add('parttab_button_green');
+        }
+        else {
+            document.getElementById("partbutton_"+I).classList.add('parttab_button_orange');
+            var old_form = display_form(strong_calc[0],false);
+            eq1.innerHTML += "has non-integer element $";
+            for (j = 0; j < strong_calc[0].length; j ++) {
+                if (j > the_float) {
+                    strong_calc[0][j-1] = strong_calc[0][j];
+                }
+            }
+            strong_calc[0].pop();
+            eq1.innerHTML += the_float_2+"$. There is no dependence unless $"+display_form(strong_calc[0],false)+"$ makes it so that the distance in total is an integer. Even in this case there can still be no dependence if it is not in bounds $"+old_form+" \\lt "+display_form(strong_calc[1],false)+ "$.";
+        }
+    }
+    else {
+        eq1.innerHTML = "$d = \\frac{"+disp_type_1+(disp_type_2[0] != '-' ? '+'+disp_type_2 : disp_type_2)+"}{"+disp_type_3+"} = "+display_form(strong_calc[0],false)+"$ <span style=\"margin-left:25px\"></span> $L = "+display_form(strong_calc[2],false)+"$ <span style=\"margin-left:25px\"></span> $U = "+display_form(strong_calc[3],false)+"$ <span style=\"margin-left:25px\"></span>(of loop index $"+type[1]+"$)";
+        var dist_abs = '%';
+        var comparable = false;
+        var result = true;
+        document.getElementById("partbutton_"+I).classList.add('parttab_button_red');
+        var eq2 = document.createElement("div");
+        eq2.style="margin-top:10px;";
+        if (strong_calc[0][0].type == 'val' && strong_calc[1][0].type == 'val' && strong_calc[1].length == 1 && strong_calc[0].length == 1) {
+            if (strong_calc[0][0].value < 0 ) {
+                if (-strong_calc[0][0].value >= strong_calc[1][0].value) {
+                    result = false;
+                }
+            }
+            else {
+                if (strong_calc[0][0].value >= strong_calc[1][0].value) {
+                    result = false;
+                }
+            }
+            comparable = true;
+        }
+        if (strong_calc[0][0].type == 'val') {
+            if (strong_calc[0][0].value < 0) {
+                dist_abs = true;
+            }
+            else {
+                dist_abs = false;
+            }
+        }
+        result_span = result ? "<span style=\" color:green; font-weight:700\">True</span>" : "<span style=\"color:red; font-weight:700\">False</span>";
+        if (dist_abs != '%' && comparable == true ) {
+            eq2.innerHTML += "$|d| \\lt U - L$ <span style=\"margin-left:10px\"></span> is <span style=\"margin-left:10px\"></span> $|"+strong_calc[0][0].value+"| \\lt "+ display_form(strong_calc[3],false) + " " + display_form(get_form_mult(strong_calc[2],new Array(new Value(-1))),false)+"$ <span style=\"margin-left:10px\"></span> $\\equiv$ <span style=\"margin-left:10px\"></span> $"+(dist_abs ? (strong_calc[0][0].value *(-1)) : strong_calc[0][0].value)+" \\lt "+display_form(strong_calc[1],false)+"$ <span style=\"margin-left:10px\"> "+ result_span ;
+        }
+        tab.appendChild(eq2);
+        response = result ? 'Partition <span style="font-weight:700; color:red;">does not</span> yield independence' : 'Partition yields <span style="font-weight:700; color:green;">independence</span>';
+        if (result == false) {
+            document.getElementById("partbutton_"+I).classList.add('parttab_button_green');
+            document.getElementById("partbutton_"+I).classList.remove('parttab_button_red');
+        }
+    }
+    var last_step_1 = document.getElementById("calculate_div_"+I);
+    var last_step_2 = document.getElementById("calculate_div_"+I+"_2");
+    last_step_1.innerHTML = "<div class=\"continue_icon\">j</div> <span id=\"calculate_div_"+I+"_span\" class=\"cont_1_clicked\">Dependence:</span>";
+    last_step_2.innerHTML = response;
+
+    overall_dep();
+    /////////////// if response cutarica
+    /////////////// update thing after tabs
+    //////////////// <3
+
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+}
+
+function overall_dep() {
+    var red = false;
+    var all_red = true;
+    var orange = false;
+    var green = false;
+    var parttab;
+    for (var i = 0; i < partitions.length; i ++) {
+        parttab = document.getElementById("partbutton_"+i);
+
+        if (parttab.classList.contains('parttab_button_red')) {
+            red = true;
+        }
+        else {
+            all_red = false;
+        }
+        if (parttab.classList.contains('parttab_button_orange')) {
+            orange = true;
+        }
+        if (parttab.classList.contains('parttab_button_green')) {
+            green = true;
+        }
+    }
+    var part_status = document.getElementById("part_status");
+    if (green == true) {
+        part_status.innerHTML = "Tests yield independence";
+        part_status.style= "display:inline-block; margin-left:10px; color: green";
+    }
+    else if (all_red == true) {
+        part_status.innerHTML = 'Probably has dependence';
+        part_status.style = "display:inline-block; margin-left:10px; color: red;";
+    }
+    else if (orange == true || red == true) {
+        part_status.innerHTML = "Tests inconclusive";
+        part_status.style = "display:inline-block; margin-left:10px; color: orange";
+    }
+    else {
+        part_status.innerHTML = "Tests not done"
+    }
+}
 
 // Subscript form
 
@@ -1927,8 +2437,10 @@ function get_form(expr) {
             if (expr.op == '+') return get_form_add(get_form(expr.lhs),get_form(expr.rhs));
             else if (expr.op == '-') return get_form_add(get_form(expr.lhs),get_form_mult(get_form(expr.rhs),arr));
             else if (expr.op == '*') return get_form_mult(get_form(expr.lhs),get_form(expr.rhs));
+            else if (expr.op == '/') return get_form_div(get_form(expr.lhs),get_form(expr.rhs));
         }
     }
+    console.log('not supported');
     return "not supported";
 }
 
@@ -1963,7 +2475,9 @@ function F_Var(variable) {
     }
 }*/
 
-function get_form_mult(x,y) {
+function get_form_mult(x1,y1) {
+    var x = jQuery.extend([], x1);
+    var y = jQuery.extend([], y1);
     var i, j, ii, ok;
     var z = new Array();
     var k = new Map();
@@ -1978,7 +2492,7 @@ function get_form_mult(x,y) {
                 k.set(j+","+i,true);
             }
             if (x[i].type == 'var' && y[j].type == 'var') {
-                if (x[i].variable == y[j].variable) return "not supported";
+                if (x[i].variable == y[j].variable) { console.log('not supported'); return "not supported"; }
                 else if (its.has(y[j].variable)) {
                     z.push(new Variable(y[j].variable));
                     var h = new Array();
@@ -2036,7 +2550,110 @@ function get_form_mult(x,y) {
     return z;
 }
 
-function get_form_add(x,y) {
+function get_form_div(x1,y1) {
+    var x = jQuery.extend([], x1);
+    var y = jQuery.extend([], y1);
+    var i, j, ii, ok;
+    var z = new Array();
+    var k = new Map();
+    for (i = 0; i < x.length; i ++) {
+        for (j = 0; j < y.length; j ++) {
+            if (k.has(i+","+j)) {
+                if (j < y.length-1) j++;
+                else break;
+            }
+            else {
+                k.set(i+","+j,true);
+                k.set(j+","+i,true);
+            }
+            if (x[i].type == 'var' && y[j].type == 'var') {
+                if (x[i].variable == y[j].variable) {
+                    if (x[i].elems.length == 1 && x[i].elems[0].type == 'val' && y[j].elems.length == 1 && y[j].elems[0].type == 'val') {
+                        z.push(new Value(x[i].elems[0].value/y[j].elems[0].value));
+                    }
+                    else {
+                        console.log('not supported');
+                        return "not supported";
+                    }
+                }
+                else {
+                    console.log(x[i]);
+                    console.log(y[j]);
+                    console.log('not supported');
+                    return "not supported";
+                }
+                /*else if (its.has(y[j].variable)) {
+                    z.push(new Variable(y[j].variable));
+                    var h = new Array();
+                    h.push(x[i]);
+                    z[z.length-1].elems = get_form_mult(y[j].elems,h);
+                }
+                else {
+                    z.push(new Variable(x[i].variable));
+                    var h = new Array();
+                    h.push(y[i]);
+                    z[z.length-1].elems = get_form_mult(x[i].elems,h);
+                }*/
+            }
+            else {
+                if (x[i].type == 'var') {
+                    z.push(x[i]);
+                    var h  = new Array();
+                    h.push(y[j]);
+                    z[z.length-1].elems = get_form_div(x[i].elems,h);
+                }
+                else if (y[j].type == 'var') {
+                    z.push(x[i]);
+                    if (x[i].value != 0) {
+                        z[z.length-1].divided = y[j];
+                    }
+                }
+                /*if (x[i].type == 'var') {
+                    var h = new Array();
+                    h.push(y[j]);
+                    ok = 0;
+                    for (ii = 0; ii < z.length; ii ++) {
+                        if (z[ii].type == 'var') {
+                            if (z[ii].variable == x[i].variable) {
+                                z[ii].elems = get_form_add(z[ii].elems,get_form_mult(x[i].elems,h));
+                                ok = 1;
+                            }
+                        }
+                    }
+                    if (ok == 0) {
+                        z.push(x[i]);
+                        z[z.length-1].elems = get_form_mult(x[i].elems,h);
+                    }
+                }*/
+                /*else if (y[j].type == 'var') {
+                    var h = new Array();
+                    h.push(x[i]);
+                    ok = 0;
+                    for (ii = 0; ii < z.length; ii ++) {
+                        if (z[ii].type == 'var') {
+                            if (z[ii].variable == y[j].variable) {
+                                z[ii].elems = get_form_add(z[ii].elems,get_form_mult(y[j].elems,h));
+                                ok = 1;
+                            }
+                        }
+                    }
+                    if (ok == 0) {
+                        z.push(y[j]);
+                        z[z.length-1].elems = get_form_mult(y[j].elems,h);
+                    }
+                }*/
+                else {
+                    z.push(new Value(x[i].value/y[j].value));
+                }
+            }
+        }
+    }
+    return z;
+}
+
+function get_form_add(x1,y1) {
+    var x = jQuery.extend([], x1);
+    var y = jQuery.extend([], y1);
     var i, j;
     var z = new Array();
     var w = new Array();
@@ -2044,22 +2661,36 @@ function get_form_add(x,y) {
         z.push(0);
     }
     for (i = 0; i < x.length; i ++) {
-        w.push(x[i]);
+        w.push(jQuery.extend({},x[i]));
         for (j = 0; j < y.length; j ++) {
             if (x[i].type == 'var' && y[j].type == 'var'){
                 if (x[i].variable == y[j].variable) {
                     w[i].elems = get_form_add(x[i].elems,y[j].elems);
+                    if (w[i].elems.length == 1) {
+                        if (w[i].elems[0].type == 'val') {
+                            if (w[i].elems[0].value == 0) {
+                                w.pop();
+                            }
+                        }
+                    }
                     z[j] = 1;
                 }
             }
             else if (x[i].type == 'val' && y[j].type == 'val') {
-                w[i].value = x[i].value + y[j].value;
-                z[j] = 1;
+                if (x[i].divided == y[j].divided) {
+                    w[i].value = x[i].value + y[j].value;
+                    z[j] = 1;
+                }
             }
         }
     }
     for (j = 0; j < y.length; j ++) {
-        if (z[j] == 0) w.push(y[j]);
+        if (z[j] == 0) {
+            w.push(y[j]);
+        }
+    }
+    if (w.length == 0) {
+        w.push(new Value(0));
     }
     return w;
 }
@@ -2125,7 +2756,9 @@ function siv_form(forms) {
     return null;
 }
 
-function siv_equiv(x,y) {
+function siv_equiv(x1,y1) {
+    var x = jQuery.extend([], x1);
+    var y = jQuery.extend([], y1);
     var new_x = new Array();
     var new_y = new Array();
     var times_x = null;
@@ -2134,6 +2767,7 @@ function siv_equiv(x,y) {
         if (x[i].type == 'var') {
             if (its.has(x[i].variable)) {
                 times_x = x[i].elems;
+                it = x[i].variable;
             }
             else {
                 new_x.push(x[i]);
@@ -2147,6 +2781,7 @@ function siv_equiv(x,y) {
         if (y[i].type == 'var') {
             if (its.has(y[i].variable)) {
                 times_y = y[i].elems;
+                it = y[i].variable;
             }
             else {
                 new_y.push(y[i]);
@@ -2156,13 +2791,65 @@ function siv_equiv(x,y) {
             new_y.push(y[i]);
         }
     }
-    if (times_x == null || times_y == null) return 'weak-zero';
-    if (const_equiv(times_x,times_y)) return 'strong';
+    if (times_x == null) {
+        return ['weak-zero','y',it,times_y,new_x,new_y];
+    }
+    else if (times_y == null) {
+        return ['weak-zero','x',it,times_x,new_x,new_y];
+    }
+    if (const_equiv(times_x,times_y)) {
+        return ['strong',it,times_x,new_x,new_y];
+    }
     var arr = new Array();
     arr.push(new Value(-1));
-    if (const_equiv(times_x,get_form_mult(times_y,arr))) return 'weak-crossing'
-    else return 'weak';
+    if (const_equiv(times_x,get_form_mult(times_y,arr))) {
+        return ['weak-crossing',it,times_x,times_y,new_x,new_y];
+    }
+    else {
+        return ['weak',it,times_x,times_y,new_x,new_y];
+    }
 }
+
+function strong_siv(f) {
+    var it = f[1];
+    var times = jQuery.extend([], f[2]);
+    var x = jQuery.extend([], f[3])
+    var y = jQuery.extend([], f[4])
+    var arr = new Array();
+    arr.push(new Value(-1));
+    var dist = get_form_div(get_form_add(x,get_form_mult(y,arr)),times);
+    var range_brute = iterators_se.get(it);
+    var range = get_form_add(get_form(range_brute[1]),get_form_mult(get_form(range_brute[0]),arr));
+    return [dist,range,get_form(range_brute[0]),get_form(range_brute[1])];
+    // check if dist has variables if not take absolute value
+    // need function to show -- still
+}
+
+function display_form(f,b) {
+    var string_build = "";
+    for (var i = 0; i < f.length; i ++) {
+        if (f[i].type == 'val') {
+            if (f[i].value < 0 ) string_build += f[i].value
+            else string_build += '+' + f[i].value;
+        }
+        else if (f[i].type == 'var') {
+            sb = display_form(f[i].elems,true);
+            if (f[i].elems.length > 1) { string_build += '(' + sb + ')' + f[i].variable; }
+            else if (sb == '-1') { string_build += '-' + f[i].variable; }
+            else if (sb == '+1') { string_build += '+' + f[i].variable; }
+            else { string_build += sb + f[i].variable; }
+        }
+    }
+    if (b == false) {
+        if (string_build[0] == '+') {
+            string_build = string_build.substring(1,string_build.length);
+        }
+        if (string_build.length == 0) string_build = "0";
+    }
+    return string_build;
+}
+
+
 
 function const_equiv(x,y) {
     var i, j;
@@ -2186,6 +2873,8 @@ function const_equiv(x,y) {
 }
 
 
+
+
 // Subscript end
 
 
@@ -2201,15 +2890,36 @@ function gcd (a, b) {
     return gcd(b, a % b);
 }
 
-function gcd_test(x,y) {
+function gcd_test(times1,times2,const1,const2) {
+
+    var divider = null;
+    var res = null;
+
+    var arr = new Array();
+    arr.push(new Value(-1));
+    var divided = get_form_add(const2,get_form_mult(const1,arr));
+    if (times1.length == 1 && times2.length == 1) {
+        if (times1[0].type == 'val' && times2[0].type == 'val') {
+            divider = gcd(times1[0].value,times2[0].value);
+        }
+    }
+    if (divided.length == 1 && divider != null) {
+        if (divided[0].type == 'val') {
+            res = divided[0].value % divider;
+        }
+    }
+    return [res,divided,divider];
+}
+
+/*function gcd_test(x,y) {
     var X;
     var Y;
-    if (x.id != y.id) {
+    /*if (x.id != y.id) {
         document.getElementById("gcd_status").innerHTML = "The arrays of the calls do not match. There are is no dependency.";
     }
     else if (x.index_list.length != y.index_list.length) {
         document.getElementById("gcd_status").innerHTML = "The dimensions of the arrays called do not match !?";
-    }
+    }* do this for array calss-------------------------------------------------------------------------------------------------------------8
     else {
         for (var i = 0; i < x.index_list.length; i ++) {
             X = gcd_extract(x.index_list[i]);
@@ -2233,7 +2943,7 @@ function gcd_test(x,y) {
             }
         }
     }
-}
+}*/
 
 function gcd_extract(x) { // returns [x,2,-3] for A[2*x-3]
     var type = x.type;
@@ -2351,6 +3061,10 @@ document.getElementById("run_button").addEventListener('click', function(event) 
     }
 });*/
 
+document.getElementById('arrs').innerHTML = "...";
+document.getElementById('subscripts').innerHTML = "...";
+document.getElementById('partitions').innerHTML = "...";
+
 $('#run_button').qtip({
     content: {
         text: 'Runs the type of analysis selected on the right hand side'
@@ -2362,25 +3076,169 @@ $('#toggle_thing').qtip({
     }
 });
 
-/*$('#question_vis').qtip({
-    content: {
-        text: $(this).next('.tooltip_vis')
-    }
-});*/
-
-// Create the tooltips only when document ready
 $(document).ready(function()
  {
-     // MAKE SURE YOUR SELECTOR MATCHES SOMETHING IN YOUR HTML!!!
      $('#question_vis').each(function() {
          $(this).qtip({
              content: {
                  text: $(this).next('#tooltip_vis')
              },
-             style: { classes: 'qtip-bootstrap' }
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+     $('#vis_subscr').each(function() {
+         $(this).qtip({
+             content: {
+                 text: '<div><p>The term subscript will be used to refer to one of the subscripted positions in a pair of array references.</p><p>Since dependence tests always consider a pair of array references, we will always use the term subscript to refer to a pair of subscript positions. </p><p>For example, in the pair of references to array A in the following loop nest,</div><div style="font-family:\'Courier New\', Courier, monospace;"><div style="margin-left:10px; margin-top:10px;">DO i</div><div style="margin-left:20px;">    DO j</div><div style="margin-left:30px;">     DO k</div><div style="margin-left:40px;">      A(i, j) = A(i, k) + C</div><div style="margin-left:30px;">       ENDDO</div><div style="margin-left:20px;">  ENDDO</div><div style="margin-left:10px; margin-bottom:10px;">ENDDO</div></div><div>index i occurs in the first subscript and indexes j and k occur in the second subscript.</p></div>'
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+     $('#vis_select').each(function() {
+         $(this).qtip({
+             content: {
+                 text: 'For the purpose of subscript tests, we need to select either <ul><li><span style="font-weight: 700; color:blue">1 write</span> (which can potentially write to itself)</li><li> <span style="font-weight: 700; color:blue">2 writes</span>  (either which can potentially write to both)</li><li><span style="font-weight: 700; color:blue">1 write</span> (which can write after read or itself) and <span style="font-weight: 700; color:red">1 read</span> (which can read after write)</li></ul> Reads alone cannot cause dependence, and analyzing more than 2 subscripts is not possible.'
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+     $('#vis_part').each(function() {
+         $(this).qtip({
+             content: {
+                 text: '<div><p>Separability describes whether a given subscript interacts with other subscripts for the purpose of dependence testing. </p><p>When testing multidimensional arrays, a subscript position is said to be separable if its indexes do not occur in the other subscripts.</p> <p>If two different subscripts contain the same index, they are coupled. For example, in the loop below,</div><div style="font-family:\'Courier New\', Courier, monospace;"><div style="margin-left:10px; margin-top:10px;">DO i</div><div style="margin-left:20px;">    DO j</div><div style="margin-left:30px;">        DO k</div><div style="margin-left:40px;">            A(i, j, j) = A(i, j, k) + C</div><div style="margin-left:30px;">        ENDDO</div><div style="margin-left:20px;">    ENDDO</div><div style="margin-left:10px; margin-bottom:10px;">ENDDO</div></div><div>the first subscript is separable, but the second and third are coupled because they both contain j.</p><p>Partitition the subscripts corresponding to the array calls based on their separability.</p></div>'
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
          });
      });
  });
+
+ /*$(document).ready(function()
+ {
+     $('#vis_select').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_select')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });*/
+
+ /*$(document).ready(function()
+ {
+     $('.vis_subscr').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_subscr')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });
+
+ $(document).ready(function()
+ {
+     $('.vis_part').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_part')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });
+
+ $(document).ready(function()
+ {
+     $('.vis_ziv').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_ziv')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });
+
+ $(document).ready(function()
+ {
+     $('.vis_siv').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_siv')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });
+
+ $(document).ready(function()
+ {
+     $('.vis_miv').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_miv')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });
+
+ $(document).ready(function()
+ {
+     $('.vis_coupled').each(function() {
+         $(this).qtip({
+             content: {
+                 text: $(this).next('#tool_coupled')
+             },
+             style: { classes: 'qtip-bootstrap' },
+             position: {
+             target: 'mouse', // Track the mouse as the positioning target
+             adjust: { x: 5, y: 5 } // Offset it slightly from under the mouse
+            }
+         });
+     });
+ });*/
 
 
 
