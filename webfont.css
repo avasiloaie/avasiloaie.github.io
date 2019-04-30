@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-@font-face {
+/*@font-face {
   font-family: "dripicons-v2";
   src:url("fonts/dripicons-v2.eot");
   src:url("fonts/dripicons-v2.eot?#iefix") format("embedded-opentype"),
@@ -8,9 +8,15 @@
     url("fonts/dripicons-v2.ttf") format("truetype"),
     url("fonts/dripicons-v2.svg#dripicons-v2") format("svg");
   font-weight: normal;
-  font-style: normal;
+  font-style: normal;*/
 
+@font-face {
+	font-family: "dripicons-v2";  
+	src: url(fonts/dripicons-v2.ttf);  
+	font-weight: normal;  
+	font-style: normal;
 }
+
 
 [data-icon]:before {
   font-family: "dripicons-v2" !important;

@@ -1,3 +1,17 @@
+/*
+Theme Name: Twenty Thirteen
+Theme URI: http://wordpress.org/themes/twentythirteen
+Author: the WordPress team
+Author URI: http://wordpress.org/
+Description: The 2013 theme for WordPress takes us back to the blog, featuring a full range of post formats, each displayed beautifully in their own unique way. Design details abound, starting with a vibrant color scheme and matching header images, beautiful typography and icons, and a flexible layout that looks great on any device, big or small.
+Version: 1.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tags: black, brown, orange, tan, white, yellow, light, one-column, two-columns, right-sidebar, flexible-width, custom-header, custom-menu, editor-style, featured-images, microformats, post-formats, rtl-language-support, sticky-post, translation-ready
+Text Domain: twentythirteen
+
+*/
+
 body {
     font-family: 'Arvo', serif;
     font-size: 16px;
@@ -5,7 +19,7 @@ body {
 }
 
 #header {
-    height:110px;
+    height:80px;
     color: #F5F5F5;
     background-image: linear-gradient(to right, #EF4339 , #CA293E);
     padding: 0 40px;
@@ -58,6 +72,7 @@ body {
   border-top: none;
   float:left;
   width:100%;
+  overflow-y: scroll;
 }
 
 #loader {
@@ -65,7 +80,7 @@ body {
 }
 
 #options_bar {
-  z-index:3;
+  z-index:1;
   position: absolute;
   top: 135px;
   margin-left:15px;
@@ -98,14 +113,15 @@ body {
 }
 
 #title {
-    font-size:32px;
+    font-size:24px;
     font-weight: bold;
-    padding-top:20px;
+    padding-top:15px;
     text-shadow: #000333 0 1px 0;
+    letter-spacing:0px;
 }
 
 #desc {
-    font-size:20px;
+    font-size:16px;
     color:#D9D9D9;
     font-style: italic;
     text-shadow: #000333 0 1px 0;
@@ -116,13 +132,13 @@ body {
 }
 
 #leftside {
-  width:650px;
+  width:600px;
   float:left;
   font-size:20px;
 }
 
 #editor {
-  width:650px;
+  width:600px;
   float:left;
 }
 
@@ -131,13 +147,13 @@ body {
 }
 
 #printer {
-  margin-left:650px;
+  margin-left:600px;
     margin-right:15px;
-    z-index:2;
+    z-index:1;
 }
 
 #header_right {
-    padding-top:30px;
+    padding-top:15px;
     float:right;
 }
 
@@ -149,12 +165,13 @@ body {
 
 #header_right li {
     float: left;
-    background-color: rgba(0,0,0,0.1);
+	background-color: green;
     margin-left:20px;
+    border:solid 2px rgb(255, 255, 255);
 }
 
 #header_right li:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: green;
 }
 
 #header_right a {
@@ -253,15 +270,15 @@ body {
 }
 
 #IterationSpace {
-  height:764px;
+  height:690px;
 }
 
 #DependencyGraph {
-  height:764px;
+  height:690px;
 }
 
 #GCDTest {
-  height:764px;
+  height:726px;
 }
 
 #primary_nav_wrap
@@ -270,6 +287,7 @@ body {
   width:160px;
   margin-left:10px;
   margin-top:8px;
+  z-index:1;
 }
 
 #primary_nav_wrap ul
@@ -341,47 +359,68 @@ body {
 }
 
 #console {
-  background: #333;
-  color: #c7c7c7;
-  list-style-type: none;
-  margin-left:10px;
-  margin-right:10px;
-  padding:5px;
-  font-size:16px;
-  width:630px;
-  font-family: monospace;
+  	background: #333;
+  	color: #c7c7c7;
+  	list-style-type: none;
+  	margin-left:10px;
+  	margin-right:10px;
+	padding:5px;
+  	font-size:16px;
+  	width:570px;
+  	font-family: monospace;
 }
 
 /* width */
-::-webkit-scrollbar {
+#console::-webkit-scrollbar {
   width: 10px;
 }
 
 /* Track */
-::-webkit-scrollbar-track {
+.console::-webkit-scrollbar-track {
   background: #666;
 }
 
 /* Handle */
-::-webkit-scrollbar-thumb {
+#console::-webkit-scrollbar-thumb {
   background: #b8b8b8;
 
 }
 
 /* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
+#console::-webkit-scrollbar-thumb:hover {
   background: #d3d2d2; 
 }
 
+/* width */
+.parttab::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.parttab::-webkit-scrollbar-track {
+  background: rgb(240,240,240);
+}
+
+/* Handle */
+.parttab::-webkit-scrollbar-thumb {
+  background: lightgray;
+
+}
+
+/* Handle on hover */
+.parttab::-webkit-scrollbar-thumb:hover {
+  background: gray; 
+}
+
 .under_code {
-  width:630px;
+  width:580px;
   float:left;
   margin:0px 10px 8px 10px;
   background: rgb(223, 221, 221);
 }
 
 .under_code_vis {
-  width:630px;
+  width:580px;
   float:left;
   margin:-2px 10px 8px 10px;
   background: rgb(223, 221, 221);
@@ -391,13 +430,13 @@ body {
   font-size:20px;
   line-height: 34px;
   letter-spacing: -1px;
+margin: 10px;
+padding: 15px;
+height:422px;
   font-family: monospace;
-  border: solid 2px lightgray;
-  width:630px;
+border: solid 2px lightgray;
+  width:546px;
   background:#eee;
-  margin: 10px;
-  padding: 15px 15px;
-  height:537px;
 }
 
 .step_desc {
@@ -408,6 +447,8 @@ body {
   margin-top:8px;
   margin-bottom:8px;
   /*padding-top:20px;*/
+  text-decoration: underline;
+color:blue;
   font-style: italic;
 }
 
@@ -523,7 +564,7 @@ input:checked + .slider:before {
   font-weight:700;
   text-transform: uppercase;
   color:#444;
-  font-size:16px;
+  font-size:14px;
   letter-spacing: -1px;
   margin-top:8px;
 }
@@ -571,8 +612,8 @@ input:checked + .slider:before {
 }
 
 .nongraph {
-  padding: 15px;
-  height:762px;
+	padding: 15px;
+  height: 660px;
 }
 
 .st_button {
@@ -607,10 +648,20 @@ input:checked + .slider:before {
 
 .parttab {
   background:rgb(240,240,240);
-  height:640px;
+  height:583px;
   padding:10px;
   border: 2px solid lightgray;
-  transition:0.2s;
+  line-height:22px;
+  overflow-y: scroll;
+margin-bottom:10px;
+}
+
+.part_status_upper {
+  font-size:10px;
+  font-weight:700;
+  letter-spacing: 2px;
+  color:#666;
+  text-align:center;
 }
 
 .parttab_button {
@@ -631,7 +682,7 @@ input:checked + .slider:before {
 
 .parttab_button.active {
   /*background-color: #EF4339;*/
-  background-color: rgb(122, 122, 122);
+  background-color: rgb(143, 143, 143);
   color:rgb(236, 236, 236);
 }
 
@@ -740,11 +791,6 @@ input:checked + .slider:before {
   color:rgb(236, 236, 236);
 }*/
 
-#holder3_refresh {
-  margin-left:520px;
-  margin-top:-70px;
-  float:left;
-}
 
 #holder3_actual_refresh {
   border: 2px solid lightgrey;
@@ -865,9 +911,9 @@ input:checked + .slider:before {
   position: absolute;
   color:rgb(81, 156, 202);
   font-size:24px;
-  top:133px;
-  left:600px;
-  z-index: 100;
+  top:110px;
+  left:550px;
+  z-index:1;
 }
 
 #question_down {
@@ -875,168 +921,9 @@ input:checked + .slider:before {
   font-size:10px;
   font-weight:700;
   color:rgb(81, 156, 202);
-  top:163px;
-  left:592px;
+  top:97px;
+  left:543px;
   text-transform: uppercase;
-  z-index: 99;
+  z-index: 1;
 }
-
-
-[include*="form-input-select()"] {
-    display: block;
-    padding: 0;
-    position: relative;
-    /* Set options to normal weight */
-    /* ------------------------------------  */
-    /* START OF UGLY BROWSER-SPECIFIC HACKS */
-    /* ----------------------------------  */
-    /* FIREFOX won't let us hide the native select arrow, so we have to make it wider than needed and clip it via overflow on the parent container.
-       The percentage width is a fallback since FF 4+ supports calc() so we can just add a fixed amount of extra width to push the native arrow out of view. We're applying this hack across all FF versions because all the previous hacks were too fragile and complex.
-       You might want to consider not using this hack and using the native select arrow in FF. Note this makes the menus wider than the select button because they display at the specified width and aren't clipped. Targeting hack via http://browserhacks.com/#hack-758bff81c5c32351b02e10480b5ed48e */
-    /* Show only the native arrow */
-    color: #005ba6;
-    display: inline-block;
-    border-radius: 0;
-    box-shadow: none;
-    font-size: 16px;
-    margin-top: 9px;
-    margin-bottom: 15px;
-    width: 235px;
-  }
-  [include*="form-input-select()"]::before, [include*="form-input-select()"]::after {
-    content: '';
-    display: block;
-    position: absolute;
-    pointer-events: none;
-    z-index: 2;
-  }
-  [include*="form-input-select()"] select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-         appearance: none;
-    background: none;
-    box-sizing: border-box;
-    width: 100%;
-    margin: 0;
-    border: 1px solid transparent;
-    font-size: 16px;
-    outline: none;
-    /* Focus style */
-  }
-  [include*="form-input-select()"] select:focus {
-    background-color: transparent;
-    outline: none;
-  }
-  [include*="form-input-select()"] option {
-    font-weight: 700;
-  }
-  [include*="form-input-select()"] x:-o-prefocus, [include*="form-input-select()"]::after {
-    display: none;
-  }
-  @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-    [include*="form-input-select()"] select::-ms-expand {
-      display: none;
-    }
-    [include*="form-input-select()"] select:focus::-ms-value {
-      background: transparent;
-      color: #000;
-    }
-  }
-  @-moz-document url-prefix() {
-    [include*="form-input-select()"] {
-      overflow: hidden;
-    }
-    [include*="form-input-select()"] select {
-      width: 120%;
-      width: calc(100% + 3em);
-      /* Firefox focus has odd artifacts around the text, this kills that. See https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-focusring */
-    }
-    @supports (-moz-appearance: none) {
-      [include*="form-input-select()"] select {
-        width: 100%;
-      }
-    }
-    [include*="form-input-select()"] select:-moz-focusring {
-      color: transparent;
-      text-shadow: 0 0 0 #000;
-    }
-  }
-  @supports (-moz-appearance: none) {
-    [include*="form-input-select()"] {
-      width: 100%;
-    }
-  }
-  [include*="form-input-select()"]::before, [include*="form-input-select()"]::after {
-    content: "";
-    display: block;
-    position: absolute;
-    pointer-events: none;
-    border: 1px solid transparent;
-    width: 0;
-    height: 0;
-    right: 16px;
-  }
-  [include*="form-input-select()"]::before {
-    bottom: 55%;
-    border-width: 0 6.5px 8px 6.5px;
-    border-bottom-color: #d6d6d6;
-  }
-  [include*="form-input-select()"]::after {
-    border-width: 8px 6.5px 0 6.5px;
-    border-top-color: #d6d6d6;
-    top: 55%;
-  }
-  @-moz-document url-prefix() {
-    [include*="form-input-select()"] {
-      border-right: 3px solid #e6e6e6;
-    }
-    [include*="form-input-select()"]:hover {
-      border-right: 3px solid #005ba6;
-    }
-  }
-  [include*="form-input-select()"]:hover select {
-    box-shadow: 0 2px 3px rgba(0, 91, 166, 0.1) inset;
-    border-color: #005ba6;
-  }
-  [include*="form-input-select()"]:hover select:focus {
-    outline-color: transparent;
-  }
-  [include*="form-input-select()"]:hover::before {
-    border-bottom-color: #005ba6;
-  }
-  [include*="form-input-select()"]:hover::after {
-    border-top-color: #005ba6;
-  }
-  [include*="form-input-select()"] select {
-    border: 3px solid #e6e6e6;
-    border-radius: 0;
-    font-weight: 700;
-    font-family: 'Arvo', serif;
-    color: inherit;
-    padding: 11px 15px;
-    line-height: normal;
-    transition: border-color 0.2s ease, outline 0.2s ease;
-  }
-  [include*="form-input-select()"] select:focus {
-    box-shadow: 0 3px 4px rgba(0, 91, 166, 0.3) inset;
-    outline: 3px solid #005ba6;
-    outline-offset: -3px;
-  }
-  [include*="form-input-select()"] select[disabled], [include*="form-input-select()"] select:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  [include*="form-input-select()"] select:invalid {
-    color: #c7c7c7;
-  }
-  
-  html {
-    box-sizing: border-box;
-  }
-  
-  *,
-  *:before,
-  *:after {
-    box-sizing: inherit;
-  }
   
